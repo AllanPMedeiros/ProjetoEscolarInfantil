@@ -1,0 +1,82 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    ports:
+      - "3001:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: dockerfile.app
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app:app
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: escola
+      DB_USER: user
+      DB_PASSWORD: password
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  prometheus:
+    build:
+      context: ./prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - monitoring_network
+
+  grafana:
+    build:
+      context: ./grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring_network
+
+  postgres-exporter:
+    image: bitnami/postgres-exporter:latest
+    container_name: postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://faat:faat@db:5432/northwind?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - db
+    networks:
+      - monitoring_network
+
+networks:
+  app-network:
+    driver: bridge
+  monitoring_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  postgres_data:
+  grafana_data:
