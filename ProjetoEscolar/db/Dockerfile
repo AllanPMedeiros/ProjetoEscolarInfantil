@@ -7,7 +7,7 @@ ENV POSTGRES_USER=admin
 ENV POSTGRES_PASSWORD=admin123
 
 # Copie o script de inicialização para o diretório de inicialização do PostgreSQL
-COPY init.sql /docker-entrypoint-initdb.d/
+COPY escola.sql /docker-entrypoint-initdb.d/
 
 # Exponha a porta padrão do PostgreSQL
 EXPOSE 5432
