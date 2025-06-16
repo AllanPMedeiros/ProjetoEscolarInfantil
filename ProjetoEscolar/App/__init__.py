@@ -12,14 +12,14 @@ def create_app(teste_config=None):
     else:
         app.config.update(teste_config)
     
-    from App.crudAlunos import app as crud_alunos_app
-    from App.crudAtividade_Aluno import app as crud_atividade_aluno_app
-    from App.crudAtividades import app as crud_atividades_app
-    from App.crudPagamentos import app as crud_pagamentos_app
-    from App.crudPresencas import app as crud_presencas_app
-    from App.crudProfessores import app as crud_professores_app
-    from App.crudTurmas import app as crud_turmas_app
-    from App.crudUsuarios import app as crud_usuarios_app
+    from app.crudAlunos import app as crud_alunos_app
+    from app.crudAtividade_Aluno import app as crud_atividade_aluno_app
+    from app.crudAtividades import app as crud_atividades_app
+    from app.crudPagamentos import app as crud_pagamentos_app
+    from app.crudPresencas import app as crud_presencas_app
+    from app.crudProfessores import app as crud_professores_app
+    from app.crudTurmas import app as crud_turmas_app
+    from app.crudUsuarios import app as crud_usuarios_app
 
     app.register_blueprint(crud_alunos_app)
     app.register_blueprint(crud_atividade_aluno_app)
@@ -29,8 +29,5 @@ def create_app(teste_config=None):
     app.register_blueprint(crud_professores_app)
     app.register_blueprint(crud_turmas_app)
     app.register_blueprint(crud_usuarios_app)
-
-
     
-    
-    return app 
+    return app

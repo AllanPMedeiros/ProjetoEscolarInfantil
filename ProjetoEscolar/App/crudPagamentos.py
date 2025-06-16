@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from App.Utils.bd import create_connection
+from app.Utils.bd import create_connection
 import datetime
 
 app = Blueprint('pagamentos', __name__)

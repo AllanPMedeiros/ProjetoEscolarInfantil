@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Importe diretamente o Blueprint e crie uma aplicação de teste
-from App.crudProfessores import app as professores_bp
+from app.crudProfessores import app as professores_bp
 from flask import Flask
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def client(app):
     """Cria um cliente de teste"""
     return app.test_client()
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_create_professor_success(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -55,7 +55,7 @@ def test_create_professor_success(mock_create_connection, client):
     mock_cursor.execute.assert_called_once()
     mock_conn.commit.assert_called_once()
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_read_professor_success(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -79,7 +79,7 @@ def test_read_professor_success(mock_create_connection, client):
     # Verificar se o mock foi chamado corretamente
     mock_cursor.execute.assert_called_once()
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_read_professor_not_found(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -97,7 +97,7 @@ def test_read_professor_not_found(mock_create_connection, client):
     assert response.status_code == 404
     assert b'Professor n\\u00e3o encontrado' in response.data
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_read_all_professores(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -122,7 +122,7 @@ def test_read_all_professores(mock_create_connection, client):
     assert response_data[0]['nome_completo'] == 'Professor A'
     assert response_data[1]['nome_completo'] == 'Professor B'
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_update_professor_success(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -153,7 +153,7 @@ def test_update_professor_success(mock_create_connection, client):
     mock_cursor.execute.assert_called_once()
     mock_conn.commit.assert_called_once()
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_delete_professor_success(mock_create_connection, client):
     # Configurar o mock
     mock_conn = MagicMock()
@@ -175,7 +175,7 @@ def test_delete_professor_success(mock_create_connection, client):
     mock_cursor.execute.assert_called_once()
     mock_conn.commit.assert_called_once()
 
-@patch('App.Utils.bd.create_connection')
+@patch('app.Utils.bd.create_connection')
 def test_connection_error(mock_create_connection, client):
     # Simular falha na conexão
     mock_create_connection.return_value = None
