@@ -1,15 +1,72 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
+from flasgger import swag_from
 
 app = Blueprint('crud_alunos_app', __name__)
 
 @app.route('/alunos', methods=['POST'])
+@swag_from({
+    'tags': ['Alunos'],
+    'description': 'Cria um novo aluno.',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'aluno_id': {'type': 'integer'},
+                'nome': {'type': 'string'},
+                'data_nascimento': {'type': 'string', 'format': 'date'},
+                'id_turma': {'type': 'integer'},
+                'nome_responsavel': {'type': 'string'},
+                'telefone_responsavel': {'type': 'string'},
+                'email_responsavel': {'type': 'string'},
+                'informacoes_adicionais': {'type': 'string'},
+                'endereco': {'type': 'string'},
+                'cidade': {'type': 'string'},
+                'estado': {'type': 'string'},
+                'cep': {'type': 'string'},
+                'pais': {'type': 'string'},
+                'telefone': {'type': 'string'}
+            },
+            'required': ['aluno_id', 'nome', 'data_nascimento'],
+            'example': {
+                'aluno_id': 4,
+                'nome': 'João Silva',
+                'data_nascimento': '2010-01-15',
+                'id_turma': 1,
+                'nome_responsavel': 'Maria Silva',
+                'telefone_responsavel': '(11) 98888-7777',
+                'email_responsavel': 'maria@email.com',
+                'endereco': 'Rua A, 123',
+                'cidade': 'São Paulo',
+                'estado': 'SP',
+                'cep': '01000-000',
+                'pais': 'Brasil',
+                'telefone': '(11) 99999-9999'
+            }
+        }
+    }],
+    'responses': {
+        201: {'description': 'Aluno criado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def create_aluno():
     data = request.get_json()
     
     # Validação dos dados de entrada
     if not data or 'aluno_id' not in data or 'nome' not in data:
         return jsonify({"error": "Os campos aluno_id e nome são obrigatórios"}), 400
+        
+    # Converter aluno_id para inteiro
+    try:
+        aluno_id = int(data['aluno_id'])
+        data['aluno_id'] = aluno_id
+    except ValueError:
+        return jsonify({"error": "O campo aluno_id deve ser um número inteiro"}), 400
     
     conn = create_connection()
     if not conn:
@@ -19,11 +76,12 @@ def create_aluno():
     try:
         cursor.execute(
             """
-            INSERT INTO alunos (aluno_id, nome, endereco, cidade, estado, cep, pais, telefone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO aluno (id_aluno, nome_completo, data_nascimento, endereco, cidade, estado, cep, pais, telefone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (data['aluno_id'], data['nome'], data.get('endereco'), data.get('cidade'), 
-             data.get('estado'), data.get('cep'), data.get('pais'), data.get('telefone'))
+            (int(data['aluno_id']), data['nome'], data.get('data_nascimento', '2000-01-01'), 
+             data.get('endereco'), data.get('cidade'), data.get('estado'), 
+             data.get('cep'), data.get('pais'), data.get('telefone'))
         )
         conn.commit()
         return jsonify({"message": "Aluno criado com sucesso"}), 201
@@ -35,6 +93,36 @@ def create_aluno():
         conn.close()
 
 @app.route('/alunos/<string:aluno_id>', methods=['GET'])
+@swag_from({
+    'tags': ['Alunos'],
+    'description': 'Busca um aluno pelo ID.',
+    'parameters': [{
+        'name': 'aluno_id',
+        'in': 'path',
+        'required': True,
+        'type': 'string'
+    }],
+    'responses': {
+        200: {
+            'description': 'Dados do aluno',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'aluno_id': {'type': 'string'},
+                    'nome': {'type': 'string'},
+                    'endereco': {'type': 'string'},
+                    'cidade': {'type': 'string'},
+                    'estado': {'type': 'string'},
+                    'cep': {'type': 'string'},
+                    'pais': {'type': 'string'},
+                    'telefone': {'type': 'string'}
+                }
+            }
+        },
+        404: {'description': 'Aluno não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_aluno(aluno_id):
     conn = create_connection()
     if not conn:
@@ -42,21 +130,31 @@ def read_aluno(aluno_id):
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM alunos WHERE aluno_id = %s", (aluno_id,))
+        cursor.execute("SELECT * FROM aluno WHERE id_aluno = %s", (int(aluno_id),))
         aluno = cursor.fetchone()
         if aluno is None:
             return jsonify({"error": "Aluno não encontrado"}), 404
         
         # Convertendo objetos não serializáveis (como datetime) para string
+        data_nascimento = aluno[2]
+        if data_nascimento:
+            data_nascimento = data_nascimento.strftime('%Y-%m-%d')
+            
         result = {
             "aluno_id": aluno[0],
             "nome": aluno[1],
-            "endereco": aluno[2],
-            "cidade": aluno[3],
-            "estado": aluno[4],
-            "cep": aluno[5],
-            "pais": aluno[6],
-            "telefone": aluno[7]
+            "data_nascimento": data_nascimento,
+            "id_turma": aluno[3],
+            "nome_responsavel": aluno[4],
+            "telefone_responsavel": aluno[5],
+            "email_responsavel": aluno[6],
+            "informacoes_adicionais": aluno[7],
+            "endereco": aluno[8],
+            "cidade": aluno[9],
+            "estado": aluno[10],
+            "cep": aluno[11],
+            "pais": aluno[12],
+            "telefone": aluno[13]
         }
         
         return jsonify(result), 200
@@ -67,6 +165,32 @@ def read_aluno(aluno_id):
         conn.close()
 
 @app.route('/alunos', methods=['GET'])
+@swag_from({
+    'tags': ['Alunos'],
+    'description': 'Lista todos os alunos cadastrados.',
+    'responses': {
+        200: {
+            'description': 'Lista de alunos',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'aluno_id': {'type': 'string'},
+                        'nome': {'type': 'string'},
+                        'endereco': {'type': 'string'},
+                        'cidade': {'type': 'string'},
+                        'estado': {'type': 'string'},
+                        'cep': {'type': 'string'},
+                        'pais': {'type': 'string'},
+                        'telefone': {'type': 'string'}
+                    }
+                }
+            }
+        },
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_all_alunos():
     conn = create_connection()
     if not conn:
@@ -74,20 +198,31 @@ def read_all_alunos():
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM alunos ORDER BY nome")
+        cursor.execute("SELECT * FROM aluno ORDER BY nome_completo")
         alunos = cursor.fetchall()
         
         result = []
         for aluno in alunos:
+            # Convertendo objetos não serializáveis (como datetime) para string
+            data_nascimento = aluno[2]
+            if data_nascimento:
+                data_nascimento = data_nascimento.strftime('%Y-%m-%d')
+                
             result.append({
                 "aluno_id": aluno[0],
                 "nome": aluno[1],
-                "endereco": aluno[2],
-                "cidade": aluno[3],
-                "estado": aluno[4],
-                "cep": aluno[5],
-                "pais": aluno[6],
-                "telefone": aluno[7]
+                "data_nascimento": data_nascimento,
+                "id_turma": aluno[3],
+                "nome_responsavel": aluno[4],
+                "telefone_responsavel": aluno[5],
+                "email_responsavel": aluno[6],
+                "informacoes_adicionais": aluno[7],
+                "endereco": aluno[8],
+                "cidade": aluno[9],
+                "estado": aluno[10],
+                "cep": aluno[11],
+                "pais": aluno[12],
+                "telefone": aluno[13]
             })
         
         return jsonify(result), 200
@@ -98,6 +233,50 @@ def read_all_alunos():
         conn.close()
 
 @app.route('/alunos/<string:aluno_id>', methods=['PUT'])
+@swag_from({
+    'tags': ['Alunos'],
+    'description': 'Atualiza os dados de um aluno.',
+    'parameters': [
+        {
+            'name': 'aluno_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'nome': {'type': 'string'},
+                    'endereco': {'type': 'string'},
+                    'cidade': {'type': 'string'},
+                    'estado': {'type': 'string'},
+                    'cep': {'type': 'string'},
+                    'pais': {'type': 'string'},
+                    'telefone': {'type': 'string'}
+                },
+                'example': {
+                    'nome': 'João Silva Atualizado',
+                    'endereco': 'Rua B, 456',
+                    'cidade': 'Rio de Janeiro',
+                    'estado': 'RJ',
+                    'cep': '20000-000',
+                    'pais': 'Brasil',
+                    'telefone': '(21) 99999-9999'
+                }
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Aluno atualizado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        404: {'description': 'Aluno não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def update_aluno(aluno_id):
     data = request.get_json()
     
@@ -113,12 +292,12 @@ def update_aluno(aluno_id):
     try:
         cursor.execute(
             """
-            UPDATE alunos
-            SET nome = %s, endereco = %s, cidade = %s, estado = %s, cep = %s, pais = %s, telefone = %s
-            WHERE aluno_id = %s
+            UPDATE aluno
+            SET nome_completo = %s, endereco = %s, cidade = %s, estado = %s, cep = %s, pais = %s, telefone = %s
+            WHERE id_aluno = %s
             """,
             (data['nome'], data.get('endereco'), data.get('cidade'), data.get('estado'),
-             data.get('cep'), data.get('pais'), data.get('telefone'), aluno_id)
+             data.get('cep'), data.get('pais'), data.get('telefone'), int(aluno_id))
         )
         conn.commit()
         if cursor.rowcount == 0:
@@ -132,6 +311,22 @@ def update_aluno(aluno_id):
         conn.close()
 
 @app.route('/alunos/<string:aluno_id>', methods=['DELETE'])
+@swag_from({
+    'tags': ['Alunos'],
+    'description': 'Deleta um aluno pelo ID.',
+    'parameters': [{
+        'name': 'aluno_id',
+        'in': 'path',
+        'required': True,
+        'type': 'string'
+    }],
+    'responses': {
+        200: {'description': 'Aluno deletado com sucesso'},
+        400: {'description': 'Erro na requisição ou aluno possui dependências'},
+        404: {'description': 'Aluno não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def delete_aluno(aluno_id):
     conn = create_connection()
     if not conn:
@@ -140,18 +335,23 @@ def delete_aluno(aluno_id):
     cursor = conn.cursor()
     try:
         # Verificar se existem dependências antes de deletar
-        cursor.execute("SELECT COUNT(*) FROM Pagamento WHERE id_aluno = %s", (aluno_id,))
+        cursor.execute("SELECT COUNT(*) FROM pagamento WHERE id_aluno = %s", (int(aluno_id),))
         count = cursor.fetchone()[0]
         if count > 0:
             return jsonify({"error": "Não é possível excluir este aluno pois existem pagamentos associados a ele."}), 400
             
-        cursor.execute("SELECT COUNT(*) FROM Presenca WHERE id_aluno = %s", (aluno_id,))
+        cursor.execute("SELECT COUNT(*) FROM presenca WHERE id_aluno = %s", (int(aluno_id),))
         count = cursor.fetchone()[0]
         if count > 0:
             return jsonify({"error": "Não é possível excluir este aluno pois existem presenças associadas a ele."}), 400
+            
+        cursor.execute("SELECT COUNT(*) FROM atividade_aluno WHERE id_aluno = %s", (int(aluno_id),))
+        count = cursor.fetchone()[0]
+        if count > 0:
+            return jsonify({"error": "Não é possível excluir este aluno pois existem atividades associadas a ele."}), 400
         
         # Se não houver dependências, prosseguir com a exclusão
-        cursor.execute("DELETE FROM alunos WHERE aluno_id = %s", (aluno_id,))
+        cursor.execute("DELETE FROM aluno WHERE id_aluno = %s", (int(aluno_id),))
         conn.commit()
         if cursor.rowcount == 0:
             return jsonify({"error": "Aluno não encontrado"}), 404

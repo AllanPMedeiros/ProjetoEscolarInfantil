@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
 import bcrypt
 import re
+from flasgger import swag_from
 
 app = Blueprint('usuarios', __name__)
 
@@ -14,6 +15,36 @@ def validar_senha(senha):
     return True
 
 @app.route('/usuarios', methods=['POST'])
+@swag_from({
+    'tags': ['Usuários'],
+    'description': 'Cria um novo usuário.',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'login': {'type': 'string'},
+                'senha': {'type': 'string'},
+                'nivel_acesso': {'type': 'string'},
+                'id_professor': {'type': 'integer'}
+            },
+            'required': ['login', 'senha'],
+            'example': {
+                'login': 'usuario.novo',
+                'senha': 'Senha123456',
+                'nivel_acesso': 'admin',
+                'id_professor': 1
+            }
+        }
+    }],
+    'responses': {
+        201: {'description': 'Usuário criado com sucesso'},
+        400: {'description': 'Erro na requisição ou dados inválidos'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def create_usuario():
     data = request.get_json()
     
@@ -56,6 +87,32 @@ def create_usuario():
         conn.close()
 
 @app.route('/usuarios/<int:id_usuario>', methods=['GET'])
+@swag_from({
+    'tags': ['Usuários'],
+    'description': 'Busca um usuário pelo ID.',
+    'parameters': [{
+        'name': 'id_usuario',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {
+            'description': 'Dados do usuário',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id_usuario': {'type': 'integer'},
+                    'login': {'type': 'string'},
+                    'nivel_acesso': {'type': 'string'},
+                    'id_professor': {'type': 'integer'}
+                }
+            }
+        },
+        404: {'description': 'Usuário não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_usuario(id_usuario):
     conn = create_connection()
     if not conn:
@@ -80,6 +137,28 @@ def read_usuario(id_usuario):
         conn.close()
 
 @app.route('/usuarios', methods=['GET'])
+@swag_from({
+    'tags': ['Usuários'],
+    'description': 'Lista todos os usuários cadastrados.',
+    'responses': {
+        200: {
+            'description': 'Lista de usuários',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id_usuario': {'type': 'integer'},
+                        'login': {'type': 'string'},
+                        'nivel_acesso': {'type': 'string'},
+                        'id_professor': {'type': 'integer'}
+                    }
+                }
+            }
+        },
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_all_usuarios():
     conn = create_connection()
     if not conn:
@@ -107,6 +186,44 @@ def read_all_usuarios():
         conn.close()
 
 @app.route('/usuarios/<int:id_usuario>', methods=['PUT'])
+@swag_from({
+    'tags': ['Usuários'],
+    'description': 'Atualiza os dados de um usuário.',
+    'parameters': [
+        {
+            'name': 'id_usuario',
+            'in': 'path',
+            'required': True,
+            'type': 'integer'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'login': {'type': 'string'},
+                    'senha': {'type': 'string'},
+                    'nivel_acesso': {'type': 'string'},
+                    'id_professor': {'type': 'integer'}
+                },
+                'example': {
+                    'login': 'usuario.atualizado',
+                    'senha': 'NovaSenha123',
+                    'nivel_acesso': 'usuario',
+                    'id_professor': 2
+                }
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Usuário atualizado com sucesso'},
+        400: {'description': 'Erro na requisição ou dados inválidos'},
+        404: {'description': 'Usuário não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def update_usuario(id_usuario):
     data = request.get_json()
     
@@ -167,6 +284,21 @@ def update_usuario(id_usuario):
         conn.close()
 
 @app.route('/usuarios/<int:id_usuario>', methods=['DELETE'])
+@swag_from({
+    'tags': ['Usuários'],
+    'description': 'Deleta um usuário pelo ID.',
+    'parameters': [{
+        'name': 'id_usuario',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {'description': 'Usuário deletado com sucesso'},
+        404: {'description': 'Usuário não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def delete_usuario(id_usuario):
     conn = create_connection()
     if not conn:
@@ -188,6 +320,44 @@ def delete_usuario(id_usuario):
 
 # Rota de autenticação
 @app.route('/login', methods=['POST'])
+@swag_from({
+    'tags': ['Autenticação'],
+    'description': 'Autentica um usuário no sistema.',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'login': {'type': 'string'},
+                'senha': {'type': 'string'}
+            },
+            'required': ['login', 'senha'],
+            'example': {
+                'login': 'usuario.exemplo',
+                'senha': 'Senha123456'
+            }
+        }
+    }],
+    'responses': {
+        200: {
+            'description': 'Login bem-sucedido',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id_usuario': {'type': 'integer'},
+                    'login': {'type': 'string'},
+                    'nivel_acesso': {'type': 'string'},
+                    'message': {'type': 'string'}
+                }
+            }
+        },
+        400: {'description': 'Dados incompletos'},
+        401: {'description': 'Usuário ou senha inválidos'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def login():
     data = request.get_json()
     

@@ -1,8 +1,8 @@
 FROM python:3.9
 
-WORKDIR /app
+WORKDIR /App
 
-COPY app/requirements.txt ./requirements.txt
+COPY App/requirements.txt ./requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -10,6 +10,8 @@ COPY . .
 
 EXPOSE 5000
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/App
+ENV FLASK_ENV=development
+ENV FLASK_APP=app:App
 
 CMD ["python", "app.py"]

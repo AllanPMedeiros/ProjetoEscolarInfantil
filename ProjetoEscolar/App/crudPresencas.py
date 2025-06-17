@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
 import datetime
 
 app = Blueprint('presencas', __name__)

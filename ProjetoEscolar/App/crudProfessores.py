@@ -1,10 +1,39 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
+from flasgger import swag_from
 
 # Blueprint para rotas de professores
 app = Blueprint('professores', __name__)
 
 @app.route('/professores', methods=['POST'])
+@swag_from({
+    'tags': ['Professores'],
+    'description': 'Cria um novo professor.',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'nome_completo': {'type': 'string'},
+                'email': {'type': 'string'},
+                'telefone': {'type': 'string'}
+            },
+            'required': ['nome_completo'],
+            'example': {
+                'nome_completo': 'Maria Souza',
+                'email': 'maria.souza@email.com',
+                'telefone': '(11) 98765-4321'
+            }
+        }
+    }],
+    'responses': {
+        201: {'description': 'Professor criado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def create_professor():
     data = request.get_json()
     conn = create_connection()
@@ -15,7 +44,7 @@ def create_professor():
     try:
         cursor.execute(
             """
-            INSERT INTO Professor (nome_completo, email, telefone)
+            INSERT INTO professor (nome_completo, email, telefone)
             VALUES (%s, %s, %s)
             """,
             (data['nome_completo'], data.get('email'), data.get('telefone'))
@@ -31,6 +60,32 @@ def create_professor():
         conn.close()
 
 @app.route('/professores/<int:id_professor>', methods=['GET'])
+@swag_from({
+    'tags': ['Professores'],
+    'description': 'Busca um professor pelo ID.',
+    'parameters': [{
+        'name': 'id_professor',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {
+            'description': 'Dados do professor',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id_professor': {'type': 'integer'},
+                    'nome_completo': {'type': 'string'},
+                    'email': {'type': 'string'},
+                    'telefone': {'type': 'string'}
+                }
+            }
+        },
+        404: {'description': 'Professor não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_professor(id_professor):
     conn = create_connection()
     if conn is None:
@@ -38,7 +93,7 @@ def read_professor(id_professor):
     
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM Professor WHERE id_professor = %s", (id_professor,))
+        cursor.execute("SELECT * FROM professor WHERE id_professor = %s", (id_professor,))
         professor = cursor.fetchone()
         if professor is None:
             return jsonify({"error": "Professor não encontrado"}), 404
@@ -56,6 +111,28 @@ def read_professor(id_professor):
         conn.close()
 
 @app.route('/professores', methods=['GET'])
+@swag_from({
+    'tags': ['Professores'],
+    'description': 'Lista todos os professores cadastrados.',
+    'responses': {
+        200: {
+            'description': 'Lista de professores',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id_professor': {'type': 'integer'},
+                        'nome_completo': {'type': 'string'},
+                        'email': {'type': 'string'},
+                        'telefone': {'type': 'string'}
+                    }
+                }
+            }
+        },
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_all_professores():
     conn = create_connection()
     if conn is None:
@@ -63,7 +140,7 @@ def read_all_professores():
     
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM Professor ORDER BY nome_completo")
+        cursor.execute("SELECT * FROM professor ORDER BY nome_completo")
         professores = cursor.fetchall()
         
         result = []
@@ -84,6 +161,43 @@ def read_all_professores():
         conn.close()
 
 @app.route('/professores/<int:id_professor>', methods=['PUT'])
+@swag_from({
+    'tags': ['Professores'],
+    'description': 'Atualiza os dados de um professor.',
+    'parameters': [
+        {
+            'name': 'id_professor',
+            'in': 'path',
+            'required': True,
+            'type': 'integer'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'nome_completo': {'type': 'string'},
+                    'email': {'type': 'string'},
+                    'telefone': {'type': 'string'}
+                },
+                'required': ['nome_completo'],
+                'example': {
+                    'nome_completo': 'Maria Souza Silva',
+                    'email': 'maria.silva@email.com',
+                    'telefone': '(11) 98765-4321'
+                }
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Professor atualizado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        404: {'description': 'Professor não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def update_professor(id_professor):
     data = request.get_json()
     conn = create_connection()
@@ -94,7 +208,7 @@ def update_professor(id_professor):
     try:
         cursor.execute(
             """
-            UPDATE Professor
+            UPDATE professor
             SET nome_completo = %s, email = %s, telefone = %s
             WHERE id_professor = %s
             """,
@@ -113,6 +227,22 @@ def update_professor(id_professor):
         conn.close()
 
 @app.route('/professores/<int:id_professor>', methods=['DELETE'])
+@swag_from({
+    'tags': ['Professores'],
+    'description': 'Deleta um professor pelo ID.',
+    'parameters': [{
+        'name': 'id_professor',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {'description': 'Professor deletado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        404: {'description': 'Professor não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def delete_professor(id_professor):
     conn = create_connection()
     if conn is None:
@@ -120,7 +250,7 @@ def delete_professor(id_professor):
     
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Professor WHERE id_professor = %s", (id_professor,))
+        cursor.execute("DELETE FROM professor WHERE id_professor = %s", (id_professor,))
         conn.commit()
         if cursor.rowcount == 0:
             return jsonify({"error": "Professor não encontrado"}), 404

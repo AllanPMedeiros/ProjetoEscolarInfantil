@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
 
 app = Blueprint('atividades', __name__) 
 

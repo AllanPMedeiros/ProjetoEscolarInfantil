@@ -1,10 +1,46 @@
 from flask import Blueprint, request, jsonify
-from app.Utils.bd import create_connection
+from .Utils.bd import create_connection
 import datetime
+from flasgger import swag_from
 
 app = Blueprint('pagamentos', __name__)
 
 @app.route('/pagamentos', methods=['POST'])
+@swag_from({
+    'tags': ['Pagamentos'],
+    'description': 'Registra um novo pagamento.',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'id_aluno': {'type': 'string'},
+                'data_pagamento': {'type': 'string', 'format': 'date'},
+                'valor_pago': {'type': 'number'},
+                'forma_pagamento': {'type': 'string'},
+                'referencia': {'type': 'string'},
+                'status': {'type': 'string'}
+            },
+            'required': ['id_aluno', 'data_pagamento', 'valor_pago'],
+            'example': {
+                'id_aluno': '123',
+                'data_pagamento': '2023-05-15',
+                'valor_pago': 500.0,
+                'forma_pagamento': 'Cartão de Crédito',
+                'referencia': 'Mensalidade Maio/2023',
+                'status': 'Pago'
+            }
+        }
+    }],
+    'responses': {
+        201: {'description': 'Pagamento registrado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        404: {'description': 'Aluno não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def create_pagamento():
     data = request.get_json()
     
@@ -19,16 +55,21 @@ def create_pagamento():
     cursor = conn.cursor()
     try:
         # Verificar se o aluno existe
-        cursor.execute("SELECT COUNT(*) FROM alunos WHERE aluno_id = %s", (data['id_aluno'],))
+        try:
+            id_aluno = int(data['id_aluno'])
+        except ValueError:
+            return jsonify({"error": "O ID do aluno deve ser um número inteiro"}), 400
+            
+        cursor.execute("SELECT COUNT(*) FROM aluno WHERE id_aluno = %s", (id_aluno,))
         if cursor.fetchone()[0] == 0:
             return jsonify({"error": "Aluno não encontrado"}), 404
             
         cursor.execute(
             """
-            INSERT INTO Pagamento (id_aluno, data_pagamento, valor_pago, forma_pagamento, referencia, status)
+            INSERT INTO pagamento (id_aluno, data_pagamento, valor_pago, forma_pagamento, referencia, status)
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
-            (data['id_aluno'], data['data_pagamento'], data['valor_pago'], 
+            (id_aluno, data['data_pagamento'], data['valor_pago'], 
              data.get('forma_pagamento'), data.get('referencia'), data.get('status', 'Pendente'))
         )
         conn.commit()
@@ -41,6 +82,35 @@ def create_pagamento():
         conn.close()
 
 @app.route('/pagamentos/<int:id_pagamento>', methods=['GET'])
+@swag_from({
+    'tags': ['Pagamentos'],
+    'description': 'Busca um pagamento pelo ID.',
+    'parameters': [{
+        'name': 'id_pagamento',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {
+            'description': 'Dados do pagamento',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id_pagamento': {'type': 'integer'},
+                    'id_aluno': {'type': 'string'},
+                    'data_pagamento': {'type': 'string', 'format': 'date'},
+                    'valor_pago': {'type': 'number'},
+                    'forma_pagamento': {'type': 'string'},
+                    'referencia': {'type': 'string'},
+                    'status': {'type': 'string'}
+                }
+            }
+        },
+        404: {'description': 'Pagamento não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_pagamento(id_pagamento):
     conn = create_connection()
     if not conn:
@@ -74,6 +144,63 @@ def read_pagamento(id_pagamento):
         conn.close()
 
 @app.route('/pagamentos', methods=['GET'])
+@swag_from({
+    'tags': ['Pagamentos'],
+    'description': 'Lista todos os pagamentos com opções de filtro.',
+    'parameters': [
+        {
+            'name': 'id_aluno',
+            'in': 'query',
+            'type': 'string',
+            'required': False,
+            'description': 'Filtrar por ID do aluno'
+        },
+        {
+            'name': 'status',
+            'in': 'query',
+            'type': 'string',
+            'required': False,
+            'description': 'Filtrar por status do pagamento'
+        },
+        {
+            'name': 'data_inicio',
+            'in': 'query',
+            'type': 'string',
+            'format': 'date',
+            'required': False,
+            'description': 'Data inicial para filtro'
+        },
+        {
+            'name': 'data_fim',
+            'in': 'query',
+            'type': 'string',
+            'format': 'date',
+            'required': False,
+            'description': 'Data final para filtro'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Lista de pagamentos',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id_pagamento': {'type': 'integer'},
+                        'id_aluno': {'type': 'string'},
+                        'data_pagamento': {'type': 'string', 'format': 'date'},
+                        'valor_pago': {'type': 'number'},
+                        'forma_pagamento': {'type': 'string'},
+                        'referencia': {'type': 'string'},
+                        'status': {'type': 'string'}
+                    }
+                }
+            }
+        },
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def read_all_pagamentos():
     conn = create_connection()
     if not conn:
@@ -106,7 +233,7 @@ def read_all_pagamentos():
             valores.append(data_fim)
         
         # Construir a consulta com os filtros
-        query = "SELECT * FROM Pagamento"
+        query = "SELECT * FROM pagamento"
         if filtros:
             query += " WHERE " + " AND ".join(filtros)
         query += " ORDER BY data_pagamento DESC"
@@ -139,6 +266,44 @@ def read_all_pagamentos():
         conn.close()
 
 @app.route('/pagamentos/<int:id_pagamento>', methods=['PUT'])
+@swag_from({
+    'tags': ['Pagamentos'],
+    'description': 'Atualiza os dados de um pagamento.',
+    'parameters': [
+        {
+            'name': 'id_pagamento',
+            'in': 'path',
+            'required': True,
+            'type': 'integer'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id_aluno': {'type': 'string'},
+                    'data_pagamento': {'type': 'string', 'format': 'date'},
+                    'valor_pago': {'type': 'number'},
+                    'forma_pagamento': {'type': 'string'},
+                    'referencia': {'type': 'string'},
+                    'status': {'type': 'string'}
+                },
+                'example': {
+                    'valor_pago': 550.0,
+                    'status': 'Confirmado'
+                }
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Pagamento atualizado com sucesso'},
+        400: {'description': 'Erro na requisição'},
+        404: {'description': 'Pagamento ou aluno não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def update_pagamento(id_pagamento):
     data = request.get_json()
     
@@ -153,24 +318,29 @@ def update_pagamento(id_pagamento):
     cursor = conn.cursor()
     try:
         # Verificar se o pagamento existe
-        cursor.execute("SELECT * FROM Pagamento WHERE id_pagamento = %s", (id_pagamento,))
+        cursor.execute("SELECT * FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
         if cursor.fetchone() is None:
             return jsonify({"error": "Pagamento não encontrado"}), 404
             
         # Verificar se o aluno existe, se estiver sendo atualizado
         if 'id_aluno' in data:
-            cursor.execute("SELECT COUNT(*) FROM alunos WHERE aluno_id = %s", (data['id_aluno'],))
+            try:
+                id_aluno = int(data['id_aluno'])
+            except ValueError:
+                return jsonify({"error": "O ID do aluno deve ser um número inteiro"}), 400
+                
+            cursor.execute("SELECT COUNT(*) FROM aluno WHERE id_aluno = %s", (id_aluno,))
             if cursor.fetchone()[0] == 0:
                 return jsonify({"error": "Aluno não encontrado"}), 404
                 
         # Obter os valores atuais
-        cursor.execute("SELECT id_aluno, data_pagamento, valor_pago, forma_pagamento, referencia, status FROM Pagamento WHERE id_pagamento = %s", (id_pagamento,))
+        cursor.execute("SELECT id_aluno, data_pagamento, valor_pago, forma_pagamento, referencia, status FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
         atual = cursor.fetchone()
         
         # Atualizar o pagamento com os novos dados, mantendo os valores atuais se não fornecidos
         cursor.execute(
             """
-            UPDATE Pagamento
+            UPDATE pagamento
             SET id_aluno = %s, data_pagamento = %s, valor_pago = %s, forma_pagamento = %s, referencia = %s, status = %s
             WHERE id_pagamento = %s
             """,
@@ -194,6 +364,21 @@ def update_pagamento(id_pagamento):
         conn.close()
 
 @app.route('/pagamentos/<int:id_pagamento>', methods=['DELETE'])
+@swag_from({
+    'tags': ['Pagamentos'],
+    'description': 'Deleta um pagamento pelo ID.',
+    'parameters': [{
+        'name': 'id_pagamento',
+        'in': 'path',
+        'required': True,
+        'type': 'integer'
+    }],
+    'responses': {
+        200: {'description': 'Pagamento deletado com sucesso'},
+        404: {'description': 'Pagamento não encontrado'},
+        500: {'description': 'Erro no servidor'}
+    }
+})
 def delete_pagamento(id_pagamento):
     conn = create_connection()
     if not conn:
@@ -201,7 +386,7 @@ def delete_pagamento(id_pagamento):
         
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Pagamento WHERE id_pagamento = %s", (id_pagamento,))
+        cursor.execute("DELETE FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
         conn.commit()
         if cursor.rowcount == 0:
             return jsonify({"error": "Pagamento não encontrado"}), 404
