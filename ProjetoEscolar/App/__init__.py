@@ -33,7 +33,7 @@ def create_App(teste_config=None):
         "swagger": "2.0",
         "info": {
             "title": "API Escola",
-            "description": "API para gerenciamento de escola",
+            "description": "API para gerenciamento de Sistema de Escola Infantil",
             "version": "1.0.0"
         }
     }
