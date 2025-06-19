@@ -15,14 +15,14 @@ app = Blueprint('crud_alunos_app', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'aluno_id': {'type': 'integer'},
-                'nome': {'type': 'string'},
+                'id_aluno': {'type': 'integer'},
+                'nome_completo': {'type': 'string'},
                 'data_nascimento': {'type': 'string', 'format': 'date'},
                 'id_turma': {'type': 'integer'},
                 'nome_responsavel': {'type': 'string'},
                 'telefone_responsavel': {'type': 'string'},
                 'email_responsavel': {'type': 'string'},
-                'informacoes_adicionais': {'type': 'string'},
+                'informacoes_adicionais': {'type': 'text'},
                 'endereco': {'type': 'string'},
                 'cidade': {'type': 'string'},
                 'estado': {'type': 'string'},
@@ -30,15 +30,16 @@ app = Blueprint('crud_alunos_app', __name__)
                 'pais': {'type': 'string'},
                 'telefone': {'type': 'string'}
             },
-            'required': ['aluno_id', 'nome', 'data_nascimento'],
+            'required': ['id_aluno', 'nome_completo', 'data_nascimento'],
             'example': {
-                'aluno_id': 4,
-                'nome': 'João Silva',
+                'id_aluno': 4,
+                'nome_completo': 'João Silva',
                 'data_nascimento': '2010-01-15',
                 'id_turma': 1,
                 'nome_responsavel': 'Maria Silva',
                 'telefone_responsavel': '(11) 98888-7777',
                 'email_responsavel': 'maria@email.com',
+                'informacoes_adicionais': 'Aluno com alergia a amendoim',
                 'endereco': 'Rua A, 123',
                 'cidade': 'São Paulo',
                 'estado': 'SP',
@@ -58,13 +59,13 @@ def create_aluno():
     data = request.get_json()
     
     # Validação dos dados de entrada
-    if not data or 'aluno_id' not in data or 'nome' not in data:
-        return jsonify({"error": "Os campos aluno_id e nome são obrigatórios"}), 400
+    if not data or 'id_aluno' not in data or 'nome_completo' not in data:
+        return jsonify({"error": "Os campos id_aluno e nome_completo são obrigatórios"}), 400
         
-    # Converter aluno_id para inteiro
+    # Converter id_aluno para inteiro
     try:
-        aluno_id = int(data['aluno_id'])
-        data['aluno_id'] = aluno_id
+        id_aluno = int(data['id_aluno'])
+        data['id_aluno'] =  id_aluno
     except ValueError:
         return jsonify({"error": "O campo aluno_id deve ser um número inteiro"}), 400
     
@@ -76,12 +77,13 @@ def create_aluno():
     try:
         cursor.execute(
             """
-            INSERT INTO aluno (id_aluno, nome_completo, data_nascimento, endereco, cidade, estado, cep, pais, telefone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO aluno (id_aluno, nome_completo, data_nascimento, id_turma, nome_responsavel, telefone_responsavel, email_responsavel, informacoes_adicionais, endereco, cidade, estado, cep, pais, telefone)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             """,
-            (int(data['aluno_id']), data['nome'], data.get('data_nascimento', '2000-01-01'), 
-             data.get('endereco'), data.get('cidade'), data.get('estado'), 
-             data.get('cep'), data.get('pais'), data.get('telefone'))
+            (int(data['id_aluno']), data['nome_completo'], data.get('data_nascimento', '2000-01-01'), 
+             data.get('id_turma'), data.get('nome_responsavel'), data.get('telefone_responsavel'),
+             data.get('email_responsavel'), data.get('informacoes_adicionais'), data.get('endereco'), 
+             data.get('cidade'), data.get('estado'), data.get('cep'), data.get('pais'), data.get('telefone'))
         )
         conn.commit()
         return jsonify({"message": "Aluno criado com sucesso"}), 201
@@ -108,8 +110,14 @@ def create_aluno():
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'aluno_id': {'type': 'string'},
-                    'nome': {'type': 'string'},
+                    'id_aluno': {'type': 'integer'},
+                    'nome_completo': {'type': 'string'},
+                    'data_nascimento': {'type': 'string', 'format': 'date'},
+                    'id_turma': {'type': 'integer'},
+                    'nome_responsavel': {'type': 'string'},
+                    'telefone_responsavel': {'type': 'string'},
+                    'email_responsavel': {'type': 'string'},
+                    'informacoes_adicionais': {'type': 'string'},
                     'endereco': {'type': 'string'},
                     'cidade': {'type': 'string'},
                     'estado': {'type': 'string'},
@@ -176,8 +184,14 @@ def read_aluno(aluno_id):
                 'items': {
                     'type': 'object',
                     'properties': {
-                        'aluno_id': {'type': 'string'},
-                        'nome': {'type': 'string'},
+                        'id_aluno': {'type': 'integer'},
+                        'nome_completo': {'type': 'string'},
+                        'data_nascimento': {'type': 'string', 'format': 'date'},
+                        'id_turma': {'type': 'integer'},
+                        'nome_responsavel': {'type': 'string'},
+                        'telefone_responsavel': {'type': 'string'},
+                        'email_responsavel': {'type': 'string'},
+                        'informacoes_adicionais': {'type': 'string'},
                         'endereco': {'type': 'string'},
                         'cidade': {'type': 'string'},
                         'estado': {'type': 'string'},
@@ -250,7 +264,13 @@ def read_all_alunos():
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'nome': {'type': 'string'},
+                    'nome_completo': {'type': 'string'},
+                    'data_nascimento': {'type': 'string', 'format': 'date'},
+                    'id_turma': {'type': 'integer'},
+                    'nome_responsavel': {'type': 'string'},
+                    'telefone_responsavel': {'type': 'string'},
+                    'email_responsavel': {'type': 'string'},
+                    'informacoes_adicionais': {'type': 'string'},
                     'endereco': {'type': 'string'},
                     'cidade': {'type': 'string'},
                     'estado': {'type': 'string'},
@@ -259,7 +279,13 @@ def read_all_alunos():
                     'telefone': {'type': 'string'}
                 },
                 'example': {
-                    'nome': 'João Silva Atualizado',
+                    'nome_completo': 'João Silva Atualizado',
+                    'data_nascimento': '2010-01-15',
+                    'id_turma': 1,
+                    'nome_responsavel': 'Maria Silva',
+                    'telefone_responsavel': '(11) 98888-7777',
+                    'email_responsavel': 'maria@email.com',
+                    'informacoes_adicionais': 'Aluno exemplar',
                     'endereco': 'Rua B, 456',
                     'cidade': 'Rio de Janeiro',
                     'estado': 'RJ',
@@ -281,8 +307,8 @@ def update_aluno(aluno_id):
     data = request.get_json()
     
     # Validação dos dados de entrada
-    if not data or 'nome' not in data:
-        return jsonify({"error": "O campo nome é obrigatório"}), 400
+    if not data or 'nome_completo' not in data:
+        return jsonify({"error": "O campo nome_completo é obrigatório"}), 400
     
     conn = create_connection()
     if not conn:
@@ -293,11 +319,15 @@ def update_aluno(aluno_id):
         cursor.execute(
             """
             UPDATE aluno
-            SET nome_completo = %s, endereco = %s, cidade = %s, estado = %s, cep = %s, pais = %s, telefone = %s
+            SET nome_completo = %s, data_nascimento = %s, id_turma = %s, nome_responsavel = %s, 
+                telefone_responsavel = %s, email_responsavel = %s, informacoes_adicionais = %s,
+                endereco = %s, cidade = %s, estado = %s, cep = %s, pais = %s, telefone = %s
             WHERE id_aluno = %s
             """,
-            (data['nome'], data.get('endereco'), data.get('cidade'), data.get('estado'),
-             data.get('cep'), data.get('pais'), data.get('telefone'), int(aluno_id))
+            (data['nome_completo'], data.get('data_nascimento'), data.get('id_turma'), 
+             data.get('nome_responsavel'), data.get('telefone_responsavel'), data.get('email_responsavel'),
+             data.get('informacoes_adicionais'), data.get('endereco'), data.get('cidade'), 
+             data.get('estado'), data.get('cep'), data.get('pais'), data.get('telefone'), int(aluno_id))
         )
         conn.commit()
         if cursor.rowcount == 0:
@@ -322,7 +352,7 @@ def update_aluno(aluno_id):
     }],
     'responses': {
         200: {'description': 'Aluno deletado com sucesso'},
-        400: {'description': 'Erro na requisição ou aluno possui dependências'},
+        400: {'description': 'Erro na requisição ou aluno possui pagamentos pendentes'},
         404: {'description': 'Aluno não encontrado'},
         500: {'description': 'Erro no servidor'}
     }
@@ -334,27 +364,26 @@ def delete_aluno(aluno_id):
         
     cursor = conn.cursor()
     try:
-        # Verificar se existem dependências antes de deletar
-        cursor.execute("SELECT COUNT(*) FROM pagamento WHERE id_aluno = %s", (int(aluno_id),))
+        # Verificar se o aluno existe
+        cursor.execute("SELECT COUNT(*) FROM aluno WHERE id_aluno = %s", (int(aluno_id),))
         count = cursor.fetchone()[0]
-        if count > 0:
-            return jsonify({"error": "Não é possível excluir este aluno pois existem pagamentos associados a ele."}), 400
+        if count == 0:
+            return jsonify({"error": "Aluno não encontrado"}), 404
             
-        cursor.execute("SELECT COUNT(*) FROM presenca WHERE id_aluno = %s", (int(aluno_id),))
+        # Verificar se existem pagamentos pendentes
+        cursor.execute("SELECT COUNT(*) FROM pagamento WHERE id_aluno = %s AND status = 'pendente'", (int(aluno_id),))
         count = cursor.fetchone()[0]
         if count > 0:
-            return jsonify({"error": "Não é possível excluir este aluno pois existem presenças associadas a ele."}), 400
+            return jsonify({"error": "Não é possível excluir este aluno pois existem pagamentos pendentes associados a ele."}), 400
             
-        cursor.execute("SELECT COUNT(*) FROM atividade_aluno WHERE id_aluno = %s", (int(aluno_id),))
-        count = cursor.fetchone()[0]
-        if count > 0:
-            return jsonify({"error": "Não é possível excluir este aluno pois existem atividades associadas a ele."}), 400
+        # Excluir registros relacionados primeiro
+        cursor.execute("DELETE FROM pagamento WHERE id_aluno = %s", (int(aluno_id),))
+        cursor.execute("DELETE FROM presenca WHERE id_aluno = %s", (int(aluno_id),))
+        cursor.execute("DELETE FROM atividade_aluno WHERE id_aluno = %s", (int(aluno_id),))
         
-        # Se não houver dependências, prosseguir com a exclusão
+        # Excluir o aluno
         cursor.execute("DELETE FROM aluno WHERE id_aluno = %s", (int(aluno_id),))
         conn.commit()
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Aluno não encontrado"}), 404
         return jsonify({"message": "Aluno deletado com sucesso"}), 200
     except Exception as e:
         conn.rollback()
