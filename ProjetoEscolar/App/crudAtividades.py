@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from .Utils.bd import create_connection
 from flasgger import swag_from
+from collections import OrderedDict
 
 app = Blueprint('atividades', __name__) 
 
@@ -14,17 +15,17 @@ app = Blueprint('atividades', __name__)
         'required': True,
         'schema': {
             'type': 'object',
-            'properties': {
-                'id_atividade': {'type': 'integer'},
-                'descricao': {'type': 'string'},
-                'data_realizacao': {'type': 'string', 'format': 'date'}
-            },
+            'properties': OrderedDict([
+                ('id_atividade', {'type': 'integer'}),
+                ('descricao', {'type': 'string'}),
+                ('data_realizacao', {'type': 'string', 'format': 'date'})
+            ]),
             'required': ['id_atividade', 'descricao', 'data_realizacao'],
-            'example': {
-                'id_atividade': 3,
-                'descricao': 'Atividade de Matemática',
-                'data_realizacao': '2023-06-15'
-            }
+            'example': OrderedDict([
+                ('id_atividade', 3),
+                ('descricao', 'Atividade de Matemática'),
+                ('data_realizacao', '2023-06-15')
+            ])
         }
     }],
     'responses': {
@@ -32,10 +33,10 @@ app = Blueprint('atividades', __name__)
             'description': 'Atividade criada com sucesso',
             'schema': {
                 'type': 'object',
-                'properties': {
-                    'message': {'type': 'string'},
-                    'id_atividade': {'type': 'integer'}
-                }
+                'properties': OrderedDict([
+                    ('message', {'type': 'string'}),
+                    ('id_atividade', {'type': 'integer'})
+                ])
             }
         },
         400: {'description': 'Erro na requisição'},
@@ -86,11 +87,11 @@ def create_atividade():
             'description': 'Dados da atividade',
             'schema': {
                 'type': 'object',
-                'properties': {
-                    'id_atividade': {'type': 'integer'},
-                    'descricao': {'type': 'string'},
-                    'data_realizacao': {'type': 'string', 'format': 'date'}
-                }
+                'properties': OrderedDict([
+                    ('id_atividade', {'type': 'integer'}),
+                    ('descricao', {'type': 'string'}),
+                    ('data_realizacao', {'type': 'string', 'format': 'date'})
+                ])
             }
         },
         404: {'description': 'Atividade não encontrada'},
@@ -108,11 +109,11 @@ def read_atividade(id_atividade):
         atividade = cursor.fetchone()
         if atividade is None:
             return jsonify({"error": "Atividade não encontrada"}), 404
-        return jsonify({
-            "id_atividade": atividade[0],
-            "descricao": atividade[1],
-            "data_realizacao": atividade[2].strftime('%Y-%m-%d') if hasattr(atividade[2], 'strftime') else atividade[2]
-        }), 200
+        return jsonify(OrderedDict([
+            ("id_atividade", atividade[0]),
+            ("descricao", atividade[1]),
+            ("data_realizacao", atividade[2].strftime('%Y-%m-%d') if hasattr(atividade[2], 'strftime') else atividade[2])
+        ])), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
     finally:
@@ -130,11 +131,11 @@ def read_atividade(id_atividade):
                 'type': 'array',
                 'items': {
                     'type': 'object',
-                    'properties': {
-                        'id_atividade': {'type': 'integer'},
-                        'descricao': {'type': 'string'},
-                        'data_realizacao': {'type': 'string', 'format': 'date'}
-                    }
+                    'properties': OrderedDict([
+                        ('id_atividade', {'type': 'integer'}),
+                        ('descricao', {'type': 'string'}),
+                        ('data_realizacao', {'type': 'string', 'format': 'date'})
+                    ])
                 }
             }
         },
@@ -153,11 +154,11 @@ def read_all_atividades():
         
         result = []
         for atividade in atividades:
-            result.append({
-                "id_atividade": atividade[0],
-                "descricao": atividade[1],
-                "data_realizacao": atividade[2].strftime('%Y-%m-%d') if hasattr(atividade[2], 'strftime') else atividade[2]
-            })
+            result.append(OrderedDict([
+                ("id_atividade", atividade[0]),
+                ("descricao", atividade[1]),
+                ("data_realizacao", atividade[2].strftime('%Y-%m-%d') if hasattr(atividade[2], 'strftime') else atividade[2])
+            ]))
         
         return jsonify(result), 200
     except Exception as e:
@@ -183,15 +184,15 @@ def read_all_atividades():
             'required': True,
             'schema': {
                 'type': 'object',
-                'properties': {
-                    'descricao': {'type': 'string'},
-                    'data_realizacao': {'type': 'string', 'format': 'date'}
-                },
+                'properties': OrderedDict([
+                    ('descricao', {'type': 'string'}),
+                    ('data_realizacao', {'type': 'string', 'format': 'date'})
+                ]),
                 'required': ['descricao', 'data_realizacao'],
-                'example': {
-                    'descricao': 'Atividade de Matemática Atualizada',
-                    'data_realizacao': '2023-06-20'
-                }
+                'example': OrderedDict([
+                    ('descricao', 'Atividade de Matemática Atualizada'),
+                    ('data_realizacao', '2023-06-20')
+                ])
             }
         }
     ],

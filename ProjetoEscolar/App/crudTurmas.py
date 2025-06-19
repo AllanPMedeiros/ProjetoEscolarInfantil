@@ -284,7 +284,7 @@ def update_turma(id_turma):
     }],
     'responses': {
         200: {'description': 'Turma deletada com sucesso'},
-        400: {'description': 'Erro na requisição ou turma possui alunos associados'},
+        400: {'description': 'Erro na requisição'},
         404: {'description': 'Turma não encontrada'},
         500: {'description': 'Erro no servidor'}
     }
@@ -296,15 +296,17 @@ def delete_turma(id_turma):
         
     cursor = conn.cursor()
     try:
-        # Verificar se há alunos associados à turma
-        cursor.execute("SELECT COUNT(*) FROM aluno WHERE id_turma = %s", (id_turma,))
-        if cursor.fetchone()[0] > 0:
-            return jsonify({"error": "Não é possível excluir a turma pois possui alunos associados"}), 400
+        # Verificar se a turma existe
+        cursor.execute("SELECT COUNT(*) FROM turma WHERE id_turma = %s", (id_turma,))
+        if cursor.fetchone()[0] == 0:
+            return jsonify({"error": "Turma não encontrada"}), 404
             
+        # Atualizar alunos para remover a referência à turma
+        cursor.execute("UPDATE aluno SET id_turma = NULL WHERE id_turma = %s", (id_turma,))
+            
+        # Excluir a turma
         cursor.execute("DELETE FROM turma WHERE id_turma = %s", (id_turma,))
         conn.commit()
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Turma não encontrada"}), 404
         return jsonify({"message": "Turma deletada com sucesso"}), 200
     except Exception as e:
         conn.rollback()

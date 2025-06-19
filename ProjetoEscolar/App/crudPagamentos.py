@@ -16,7 +16,8 @@ app = Blueprint('pagamentos', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'id_aluno': {'type': 'string'},
+                'id_pagamento': {'type': 'integer'},
+                'id_aluno': {'type': 'integer'},
                 'data_pagamento': {'type': 'string', 'format': 'date'},
                 'valor_pago': {'type': 'number'},
                 'forma_pagamento': {'type': 'string'},
@@ -25,7 +26,7 @@ app = Blueprint('pagamentos', __name__)
             },
             'required': ['id_aluno', 'data_pagamento', 'valor_pago'],
             'example': {
-                'id_aluno': '123',
+                'id_aluno': 1,
                 'data_pagamento': '2023-05-15',
                 'valor_pago': 500.0,
                 'forma_pagamento': 'Cartão de Crédito',
@@ -98,7 +99,7 @@ def create_pagamento():
                 'type': 'object',
                 'properties': {
                     'id_pagamento': {'type': 'integer'},
-                    'id_aluno': {'type': 'string'},
+                    'id_aluno': {'type': 'integer'},
                     'data_pagamento': {'type': 'string', 'format': 'date'},
                     'valor_pago': {'type': 'number'},
                     'forma_pagamento': {'type': 'string'},
@@ -118,7 +119,7 @@ def read_pagamento(id_pagamento):
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT * FROM Pagamento WHERE id_pagamento = %s", (id_pagamento,))
+        cursor.execute("SELECT * FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
         pagamento = cursor.fetchone()
         if pagamento is None:
             return jsonify({"error": "Pagamento não encontrado"}), 404
@@ -151,7 +152,7 @@ def read_pagamento(id_pagamento):
         {
             'name': 'id_aluno',
             'in': 'query',
-            'type': 'string',
+            'type': 'integer',
             'required': False,
             'description': 'Filtrar por ID do aluno'
         },
@@ -188,7 +189,7 @@ def read_pagamento(id_pagamento):
                     'type': 'object',
                     'properties': {
                         'id_pagamento': {'type': 'integer'},
-                        'id_aluno': {'type': 'string'},
+                        'id_aluno': {'type': 'integer'},
                         'data_pagamento': {'type': 'string', 'format': 'date'},
                         'valor_pago': {'type': 'number'},
                         'forma_pagamento': {'type': 'string'},
@@ -283,7 +284,7 @@ def read_all_pagamentos():
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'id_aluno': {'type': 'string'},
+                    'id_aluno': {'type': 'integer'},
                     'data_pagamento': {'type': 'string', 'format': 'date'},
                     'valor_pago': {'type': 'number'},
                     'forma_pagamento': {'type': 'string'},
@@ -291,6 +292,7 @@ def read_all_pagamentos():
                     'status': {'type': 'string'}
                 },
                 'example': {
+                    'id_aluno': 1,
                     'valor_pago': 550.0,
                     'status': 'Confirmado'
                 }
@@ -375,6 +377,7 @@ def update_pagamento(id_pagamento):
     }],
     'responses': {
         200: {'description': 'Pagamento deletado com sucesso'},
+        400: {'description': 'Erro na requisição ou pagamento pendente'},
         404: {'description': 'Pagamento não encontrado'},
         500: {'description': 'Erro no servidor'}
     }
@@ -386,10 +389,19 @@ def delete_pagamento(id_pagamento):
         
     cursor = conn.cursor()
     try:
+        # Verificar se o pagamento existe
+        cursor.execute("SELECT status FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
+        pagamento = cursor.fetchone()
+        if pagamento is None:
+            return jsonify({"error": "Pagamento não encontrado"}), 404
+            
+        # Verificar se o pagamento está pendente
+        if pagamento[0] == 'pendente':
+            return jsonify({"error": "Não é possível excluir um pagamento pendente"}), 400
+            
+        # Excluir o pagamento
         cursor.execute("DELETE FROM pagamento WHERE id_pagamento = %s", (id_pagamento,))
         conn.commit()
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Pagamento não encontrado"}), 404
         return jsonify({"message": "Pagamento deletado com sucesso"}), 200
     except Exception as e:
         conn.rollback()

@@ -16,6 +16,7 @@ app = Blueprint('professores', __name__)
         'schema': {
             'type': 'object',
             'properties': {
+                'id_professor': {'type': 'integer'},
                 'nome_completo': {'type': 'string'},
                 'email': {'type': 'string'},
                 'telefone': {'type': 'string'}
@@ -250,10 +251,20 @@ def delete_professor(id_professor):
     
     cursor = conn.cursor()
     try:
+        # Verificar se o professor existe
+        cursor.execute("SELECT COUNT(*) FROM professor WHERE id_professor = %s", (id_professor,))
+        if cursor.fetchone()[0] == 0:
+            return jsonify({"error": "Professor não encontrado"}), 404
+            
+        # Atualizar turmas para remover a referência ao professor
+        cursor.execute("UPDATE turma SET id_professor = NULL WHERE id_professor = %s", (id_professor,))
+        
+        # Atualizar usuários para remover a referência ao professor
+        cursor.execute("UPDATE usuario SET id_professor = NULL WHERE id_professor = %s", (id_professor,))
+        
+        # Excluir o professor
         cursor.execute("DELETE FROM professor WHERE id_professor = %s", (id_professor,))
         conn.commit()
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Professor não encontrado"}), 404
         return jsonify({"message": "Professor deletado com sucesso"}), 200
     except Exception as e:
         conn.rollback()

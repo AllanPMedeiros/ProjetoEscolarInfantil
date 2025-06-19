@@ -63,7 +63,7 @@ def create_usuario():
     cursor = conn.cursor()
     try:
         # Verificar se o login já existe
-        cursor.execute("SELECT COUNT(*) FROM Usuario WHERE login = %s", (data['login'],))
+        cursor.execute("SELECT COUNT(*) FROM usuario WHERE login = %s", (data['login'],))
         if cursor.fetchone()[0] > 0:
             return jsonify({"error": "Login já existe"}), 400
         
@@ -72,7 +72,7 @@ def create_usuario():
         
         cursor.execute(
             """
-            INSERT INTO Usuario (login, senha, nivel_acesso, id_professor)
+            INSERT INTO usuario (login, senha, nivel_acesso, id_professor)
             VALUES (%s, %s, %s, %s)
             """,
             (data['login'], hashed_password.decode('utf-8'), data.get('nivel_acesso', 'usuario'), data.get('id_professor'))
@@ -120,7 +120,7 @@ def read_usuario(id_usuario):
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id_usuario, login, nivel_acesso, id_professor FROM Usuario WHERE id_usuario = %s", (id_usuario,))
+        cursor.execute("SELECT id_usuario, login, nivel_acesso, id_professor FROM usuario WHERE id_usuario = %s", (id_usuario,))
         usuario = cursor.fetchone()
         if usuario is None:
             return jsonify({"error": "Usuário não encontrado"}), 404
@@ -166,7 +166,7 @@ def read_all_usuarios():
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id_usuario, login, nivel_acesso, id_professor FROM Usuario")
+        cursor.execute("SELECT id_usuario, login, nivel_acesso, id_professor FROM usuario")
         usuarios = cursor.fetchall()
         
         result = []
@@ -238,7 +238,7 @@ def update_usuario(id_usuario):
     cursor = conn.cursor()
     try:
         # Verificar se o usuário existe
-        cursor.execute("SELECT * FROM Usuario WHERE id_usuario = %s", (id_usuario,))
+        cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
         if cursor.fetchone() is None:
             return jsonify({"error": "Usuário não encontrado"}), 404
         
@@ -250,17 +250,17 @@ def update_usuario(id_usuario):
             password_value = hashed_password.decode('utf-8')
         else:
             # Manter a senha atual
-            cursor.execute("SELECT senha FROM Usuario WHERE id_usuario = %s", (id_usuario,))
+            cursor.execute("SELECT senha FROM usuario WHERE id_usuario = %s", (id_usuario,))
             password_value = cursor.fetchone()[0]
         
         # Se o login for atualizado, verificar duplicidade
         if 'login' in data:
-            cursor.execute("SELECT COUNT(*) FROM Usuario WHERE login = %s AND id_usuario != %s", (data['login'], id_usuario))
+            cursor.execute("SELECT COUNT(*) FROM usuario WHERE login = %s AND id_usuario != %s", (data['login'], id_usuario))
             if cursor.fetchone()[0] > 0:
                 return jsonify({"error": "Login já existe"}), 400
             login_value = data['login']
         else:
-            cursor.execute("SELECT login FROM Usuario WHERE id_usuario = %s", (id_usuario,))
+            cursor.execute("SELECT login FROM usuario WHERE id_usuario = %s", (id_usuario,))
             login_value = cursor.fetchone()[0]
             
         nivel_acesso = data.get('nivel_acesso')
@@ -268,7 +268,7 @@ def update_usuario(id_usuario):
         
         cursor.execute(
             """
-            UPDATE Usuario
+            UPDATE usuario
             SET login = %s, senha = %s, nivel_acesso = %s, id_professor = %s
             WHERE id_usuario = %s
             """,
@@ -306,7 +306,7 @@ def delete_usuario(id_usuario):
         
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Usuario WHERE id_usuario = %s", (id_usuario,))
+        cursor.execute("DELETE FROM usuario WHERE id_usuario = %s", (id_usuario,))
         conn.commit()
         if cursor.rowcount == 0:
             return jsonify({"error": "Usuário não encontrado"}), 404
@@ -370,7 +370,7 @@ def login():
         
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id_usuario, login, senha, nivel_acesso FROM Usuario WHERE login = %s", (data['login'],))
+        cursor.execute("SELECT id_usuario, login, senha, nivel_acesso FROM usuario WHERE login = %s", (data['login'],))
         usuario = cursor.fetchone()
         
         if not usuario:

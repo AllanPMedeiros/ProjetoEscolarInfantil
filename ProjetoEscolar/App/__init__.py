@@ -2,16 +2,16 @@
 from flask import Flask
 from flasgger import Swagger
 
-def create_App(teste_config=None):
-    App = Flask(__name__)
+def create_app(teste_config=None):
+    app = Flask(__name__)
 
     if teste_config is None:
-        App.config.from_mapping(
+        app.config.from_mapping(
             SECRET_KEY='dev',
             DATABASE='escola'
         )
     else:
-        App.config.update(teste_config)
+        app.config.update(teste_config)
     
     # Configuração do Swagger
     swagger_config = {
@@ -38,7 +38,7 @@ def create_App(teste_config=None):
         }
     }
     
-    Swagger(App, config=swagger_config, template=swagger_template)
+    Swagger(app, config=swagger_config, template=swagger_template)
     
     # Registrar blueprints
     def register_blueprints(app):
@@ -64,6 +64,6 @@ def create_App(teste_config=None):
             print(f"Erro ao importar módulos: {e}")
     
     # Registrar blueprints após a criação da aplicação
-    register_blueprints(App)
+    register_blueprints(app)
     
-    return App
+    return app
