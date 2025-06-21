@@ -16,15 +16,13 @@ app = Blueprint('atividades', __name__)
         'schema': {
             'type': 'object',
             'properties': OrderedDict([
-                ('id_atividade', {'type': 'integer'}),
                 ('descricao', {'type': 'string'}),
                 ('data_realizacao', {'type': 'string', 'format': 'date'})
             ]),
-            'required': ['id_atividade', 'descricao', 'data_realizacao'],
+            'required': ['descricao', 'data_realizacao'],
             'example': OrderedDict([
-                ('id_atividade', 3),
-                ('descricao', 'Atividade de Matemática'),
-                ('data_realizacao', '2023-06-15')
+                ('descricao', ''),
+                ('data_realizacao', '')
             ])
         }
     }],
@@ -47,8 +45,8 @@ def create_atividade():
     data = request.get_json()
     
     # Validação de dados
-    if not data or 'id_atividade' not in data or 'descricao' not in data or 'data_realizacao' not in data:
-        return jsonify({"error": "Dados incompletos. ID da atividade, descrição e data_realizacao são obrigatórios"}), 400
+    if not data or 'descricao' not in data or 'data_realizacao' not in data:
+        return jsonify({"error": "Dados incompletos. Descrição e data_realizacao são obrigatórios"}), 400
         
     conn = create_connection()
     if not conn:
@@ -58,13 +56,15 @@ def create_atividade():
     try:
         cursor.execute(
             """
-            INSERT INTO atividade (id_atividade, descricao, data_realizacao)
-            VALUES (%s, %s, %s)
+            INSERT INTO atividade (descricao, data_realizacao)
+            VALUES (%s, %s)
+            RETURNING id_atividade
             """,
-            (data['id_atividade'], data['descricao'], data['data_realizacao'])
+            (data['descricao'], data['data_realizacao'])
         )
+        id_atividade = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Atividade criada com sucesso", "id_atividade": data['id_atividade']}), 201
+        return jsonify({"message": "Atividade criada com sucesso", "id_atividade": id_atividade}), 201
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -190,8 +190,8 @@ def read_all_atividades():
                 ]),
                 'required': ['descricao', 'data_realizacao'],
                 'example': OrderedDict([
-                    ('descricao', 'Atividade de Matemática Atualizada'),
-                    ('data_realizacao', '2023-06-20')
+                    ('descricao', ''),
+                    ('data_realizacao', '')
                 ])
             }
         }

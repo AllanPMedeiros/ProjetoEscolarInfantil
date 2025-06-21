@@ -15,37 +15,23 @@ app = Blueprint('crud_alunos_app', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'id_aluno': {'type': 'integer'},
                 'nome_completo': {'type': 'string'},
                 'data_nascimento': {'type': 'string', 'format': 'date'},
                 'id_turma': {'type': 'integer'},
                 'nome_responsavel': {'type': 'string'},
                 'telefone_responsavel': {'type': 'string'},
                 'email_responsavel': {'type': 'string'},
-                'informacoes_adicionais': {'type': 'text'},
-                'endereco': {'type': 'string'},
-                'cidade': {'type': 'string'},
-                'estado': {'type': 'string'},
-                'cep': {'type': 'string'},
-                'pais': {'type': 'string'},
-                'telefone': {'type': 'string'}
+                'informacoes_adicionais': {'type': 'text'}
             },
-            'required': ['id_aluno', 'nome_completo', 'data_nascimento'],
+            'required': ['nome_completo', 'data_nascimento'],
             'example': {
-                'id_aluno': 4,
-                'nome_completo': 'João Silva',
-                'data_nascimento': '2010-01-15',
-                'id_turma': 1,
-                'nome_responsavel': 'Maria Silva',
-                'telefone_responsavel': '(11) 98888-7777',
-                'email_responsavel': 'maria@email.com',
-                'informacoes_adicionais': 'Aluno com alergia a amendoim',
-                'endereco': 'Rua A, 123',
-                'cidade': 'São Paulo',
-                'estado': 'SP',
-                'cep': '01000-000',
-                'pais': 'Brasil',
-                'telefone': '(11) 99999-9999'
+                'nome_completo': '',
+                'data_nascimento': '',
+                'id_turma': 0,
+                'nome_responsavel': '',
+                'telefone_responsavel': '',
+                'email_responsavel': '',
+                'informacoes_adicionais': ''
             }
         }
     }],
@@ -59,15 +45,8 @@ def create_aluno():
     data = request.get_json()
     
     # Validação dos dados de entrada
-    if not data or 'id_aluno' not in data or 'nome_completo' not in data:
-        return jsonify({"error": "Os campos id_aluno e nome_completo são obrigatórios"}), 400
-        
-    # Converter id_aluno para inteiro
-    try:
-        id_aluno = int(data['id_aluno'])
-        data['id_aluno'] =  id_aluno
-    except ValueError:
-        return jsonify({"error": "O campo aluno_id deve ser um número inteiro"}), 400
+    if not data or 'nome_completo' not in data:
+        return jsonify({"error": "O campo nome_completo é obrigatório"}), 400
     
     conn = create_connection()
     if not conn:
@@ -77,16 +56,17 @@ def create_aluno():
     try:
         cursor.execute(
             """
-            INSERT INTO aluno (id_aluno, nome_completo, data_nascimento, id_turma, nome_responsavel, telefone_responsavel, email_responsavel, informacoes_adicionais, endereco, cidade, estado, cep, pais, telefone)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            INSERT INTO aluno (nome_completo, data_nascimento, id_turma, nome_responsavel, telefone_responsavel, email_responsavel, informacoes_adicionais)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+            RETURNING id_aluno
             """,
-            (int(data['id_aluno']), data['nome_completo'], data.get('data_nascimento', '2000-01-01'), 
+            (data['nome_completo'], data.get('data_nascimento', '2000-01-01'), 
              data.get('id_turma'), data.get('nome_responsavel'), data.get('telefone_responsavel'),
-             data.get('email_responsavel'), data.get('informacoes_adicionais'), data.get('endereco'), 
-             data.get('cidade'), data.get('estado'), data.get('cep'), data.get('pais'), data.get('telefone'))
+             data.get('email_responsavel'), data.get('informacoes_adicionais'))
         )
+        id_aluno = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Aluno criado com sucesso"}), 201
+        return jsonify({"message": "Aluno criado com sucesso", "id_aluno": id_aluno}), 201
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -117,13 +97,7 @@ def create_aluno():
                     'nome_responsavel': {'type': 'string'},
                     'telefone_responsavel': {'type': 'string'},
                     'email_responsavel': {'type': 'string'},
-                    'informacoes_adicionais': {'type': 'string'},
-                    'endereco': {'type': 'string'},
-                    'cidade': {'type': 'string'},
-                    'estado': {'type': 'string'},
-                    'cep': {'type': 'string'},
-                    'pais': {'type': 'string'},
-                    'telefone': {'type': 'string'}
+                    'informacoes_adicionais': {'type': 'string'}
                 }
             }
         },
@@ -156,13 +130,7 @@ def read_aluno(aluno_id):
             "nome_responsavel": aluno[4],
             "telefone_responsavel": aluno[5],
             "email_responsavel": aluno[6],
-            "informacoes_adicionais": aluno[7],
-            "endereco": aluno[8],
-            "cidade": aluno[9],
-            "estado": aluno[10],
-            "cep": aluno[11],
-            "pais": aluno[12],
-            "telefone": aluno[13]
+            "informacoes_adicionais": aluno[7]
         }
         
         return jsonify(result), 200
@@ -191,13 +159,7 @@ def read_aluno(aluno_id):
                         'nome_responsavel': {'type': 'string'},
                         'telefone_responsavel': {'type': 'string'},
                         'email_responsavel': {'type': 'string'},
-                        'informacoes_adicionais': {'type': 'string'},
-                        'endereco': {'type': 'string'},
-                        'cidade': {'type': 'string'},
-                        'estado': {'type': 'string'},
-                        'cep': {'type': 'string'},
-                        'pais': {'type': 'string'},
-                        'telefone': {'type': 'string'}
+                        'informacoes_adicionais': {'type': 'string'}
                     }
                 }
             }
@@ -230,13 +192,7 @@ def read_all_alunos():
                 "nome_responsavel": aluno[4],
                 "telefone_responsavel": aluno[5],
                 "email_responsavel": aluno[6],
-                "informacoes_adicionais": aluno[7],
-                "endereco": aluno[8],
-                "cidade": aluno[9],
-                "estado": aluno[10],
-                "cep": aluno[11],
-                "pais": aluno[12],
-                "telefone": aluno[13]
+                "informacoes_adicionais": aluno[7]
             })
         
         return jsonify(result), 200
@@ -270,28 +226,19 @@ def read_all_alunos():
                     'nome_responsavel': {'type': 'string'},
                     'telefone_responsavel': {'type': 'string'},
                     'email_responsavel': {'type': 'string'},
-                    'informacoes_adicionais': {'type': 'string'},
-                    'endereco': {'type': 'string'},
-                    'cidade': {'type': 'string'},
-                    'estado': {'type': 'string'},
-                    'cep': {'type': 'string'},
-                    'pais': {'type': 'string'},
-                    'telefone': {'type': 'string'}
+                    'informacoes_adicionais': {'type': 'string'}
                 },
                 'example': {
-                    'nome_completo': 'João Silva Atualizado',
-                    'data_nascimento': '2010-01-15',
-                    'id_turma': 1,
-                    'nome_responsavel': 'Maria Silva',
-                    'telefone_responsavel': '(11) 98888-7777',
-                    'email_responsavel': 'maria@email.com',
-                    'informacoes_adicionais': 'Aluno exemplar',
-                    'endereco': 'Rua B, 456',
-                    'cidade': 'Rio de Janeiro',
-                    'estado': 'RJ',
-                    'cep': '20000-000',
-                    'pais': 'Brasil',
-                    'telefone': '(21) 99999-9999'
+                    'nome_completo': '',
+                    'data_nascimento': '',
+                    'id_turma': 0,
+                    'nome_responsavel': '',
+                    'telefone_responsavel': '',
+                    'email_responsavel': '',
+                    'informacoes_adicionais': '',
+                    'telefone_responsavel': '',
+                    'email_responsavel': '',
+                    'informacoes_adicionais': ''
                 }
             }
         }
@@ -320,14 +267,12 @@ def update_aluno(aluno_id):
             """
             UPDATE aluno
             SET nome_completo = %s, data_nascimento = %s, id_turma = %s, nome_responsavel = %s, 
-                telefone_responsavel = %s, email_responsavel = %s, informacoes_adicionais = %s,
-                endereco = %s, cidade = %s, estado = %s, cep = %s, pais = %s, telefone = %s
+                telefone_responsavel = %s, email_responsavel = %s, informacoes_adicionais = %s
             WHERE id_aluno = %s
             """,
             (data['nome_completo'], data.get('data_nascimento'), data.get('id_turma'), 
              data.get('nome_responsavel'), data.get('telefone_responsavel'), data.get('email_responsavel'),
-             data.get('informacoes_adicionais'), data.get('endereco'), data.get('cidade'), 
-             data.get('estado'), data.get('cep'), data.get('pais'), data.get('telefone'), int(aluno_id))
+             data.get('informacoes_adicionais'), int(aluno_id))
         )
         conn.commit()
         if cursor.rowcount == 0:

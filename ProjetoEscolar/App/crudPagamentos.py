@@ -16,7 +16,6 @@ app = Blueprint('pagamentos', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'id_pagamento': {'type': 'integer'},
                 'id_aluno': {'type': 'integer'},
                 'data_pagamento': {'type': 'string', 'format': 'date'},
                 'valor_pago': {'type': 'number'},
@@ -26,17 +25,26 @@ app = Blueprint('pagamentos', __name__)
             },
             'required': ['id_aluno', 'data_pagamento', 'valor_pago'],
             'example': {
-                'id_aluno': 1,
-                'data_pagamento': '2023-05-15',
-                'valor_pago': 500.0,
-                'forma_pagamento': 'Cartão de Crédito',
-                'referencia': 'Mensalidade Maio/2023',
-                'status': 'Pago'
+                'id_aluno': 0,
+                'data_pagamento': '',
+                'valor_pago': 0.0,
+                'forma_pagamento': '',
+                'referencia': '',
+                'status': ''
             }
         }
     }],
     'responses': {
-        201: {'description': 'Pagamento registrado com sucesso'},
+        201: {
+            'description': 'Pagamento registrado com sucesso',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'},
+                    'id_pagamento': {'type': 'integer'}
+                }
+            }
+        },
         400: {'description': 'Erro na requisição'},
         404: {'description': 'Aluno não encontrado'},
         500: {'description': 'Erro no servidor'}
@@ -69,12 +77,14 @@ def create_pagamento():
             """
             INSERT INTO pagamento (id_aluno, data_pagamento, valor_pago, forma_pagamento, referencia, status)
             VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id_pagamento
             """,
             (id_aluno, data['data_pagamento'], data['valor_pago'], 
              data.get('forma_pagamento'), data.get('referencia'), data.get('status', 'Pendente'))
         )
+        id_pagamento = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Pagamento criado com sucesso"}), 201
+        return jsonify({"message": "Pagamento criado com sucesso", "id_pagamento": id_pagamento}), 201
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -292,9 +302,12 @@ def read_all_pagamentos():
                     'status': {'type': 'string'}
                 },
                 'example': {
-                    'id_aluno': 1,
-                    'valor_pago': 550.0,
-                    'status': 'Confirmado'
+                    'id_aluno': 0,
+                    'data_pagamento': '',
+                    'valor_pago': 0.0,
+                    'forma_pagamento': '',
+                    'referencia': '',
+                    'status': ''
                 }
             }
         }

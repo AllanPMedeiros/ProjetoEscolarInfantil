@@ -16,21 +16,29 @@ app = Blueprint('professores', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'id_professor': {'type': 'integer'},
                 'nome_completo': {'type': 'string'},
                 'email': {'type': 'string'},
                 'telefone': {'type': 'string'}
             },
             'required': ['nome_completo'],
             'example': {
-                'nome_completo': 'Maria Souza',
-                'email': 'maria.souza@email.com',
-                'telefone': '(11) 98765-4321'
+                'nome_completo': '',
+                'email': '',
+                'telefone': ''
             }
         }
     }],
     'responses': {
-        201: {'description': 'Professor criado com sucesso'},
+        201: {
+            'description': 'Professor criado com sucesso',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'},
+                    'id_professor': {'type': 'integer'}
+                }
+            }
+        },
         400: {'description': 'Erro na requisição'},
         500: {'description': 'Erro no servidor'}
     }
@@ -47,11 +55,13 @@ def create_professor():
             """
             INSERT INTO professor (nome_completo, email, telefone)
             VALUES (%s, %s, %s)
+            RETURNING id_professor
             """,
             (data['nome_completo'], data.get('email'), data.get('telefone'))
         )
+        id_professor = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Professor criado com sucesso"}), 201
+        return jsonify({"message": "Professor criado com sucesso", "id_professor": id_professor}), 201
     except Exception as e:
         conn.rollback()
         print(f"Erro ao criar professor: {str(e)}")
@@ -185,9 +195,9 @@ def read_all_professores():
                 },
                 'required': ['nome_completo'],
                 'example': {
-                    'nome_completo': 'Maria Souza Silva',
-                    'email': 'maria.silva@email.com',
-                    'telefone': '(11) 98765-4321'
+                    'nome_completo': '',
+                    'email': '',
+                    'telefone': ''
                 }
             }
         }

@@ -16,16 +16,15 @@ app = Blueprint('presencas', __name__)
         'schema': {
             'type': 'object',
             'properties': {
-                'id_presenca': {'type': 'integer'},
                 'id_aluno': {'type': 'integer'},
                 'data_presenca': {'type': 'string', 'format': 'date'},
                 'presente': {'type': 'boolean'}
             },
             'required': ['id_aluno', 'data_presenca', 'presente'],
             'example': {
-                'id_aluno': 1,
-                'data_presenca': '2023-05-15',
-                'presente': True
+                'id_aluno': 0,
+                'data_presenca': '',
+                'presente': False
             }
         }
     }],
@@ -66,11 +65,13 @@ def create_presenca():
             """
             INSERT INTO presenca (id_aluno, data_presenca, presente)
             VALUES (%s, %s, %s)
+            RETURNING id_presenca
             """,
             (data['id_aluno'], data['data_presenca'], data['presente'])
         )
+        id_presenca = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Presença registrada com sucesso"}), 201
+        return jsonify({"message": "Presença registrada com sucesso", "id_presenca": id_presenca}), 201
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -273,8 +274,8 @@ def read_all_presencas():
                     'presente': {'type': 'boolean'}
                 },
                 'example': {
-                    'id_aluno': 1,
-                    'data_presenca': '2023-05-15',
+                    'id_aluno': 0,
+                    'data_presenca': '',
                     'presente': False
                 }
             }

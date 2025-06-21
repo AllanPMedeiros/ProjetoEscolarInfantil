@@ -21,9 +21,9 @@ app = Blueprint('turmas', __name__)
             },
             'required': ['nome_turma'],
             'example': {
-                'nome_turma': 'Turma A',
-                'id_professor': 1,
-                'horario': '08:00 - 10:00'
+                'nome_turma': '',
+                'id_professor': 0,
+                'horario': ''
             }
         }
     }],
@@ -65,13 +65,12 @@ def create_turma():
             """
             INSERT INTO turma (nome_turma, id_professor, horario)
             VALUES (%s, %s, %s)
+            RETURNING id_turma
             """,
             (data['nome_turma'], data.get('id_professor'), data.get('horario'))
         )
-        conn.commit()
-        # Obter o ID gerado
-        cursor.execute("SELECT LAST_INSERT_ID()")
         id_turma = cursor.fetchone()[0]
+        conn.commit()
         return jsonify({"message": "Turma criada com sucesso", "id_turma": id_turma}), 201
     except Exception as e:
         conn.rollback()
@@ -217,9 +216,9 @@ def read_all_turmas():
                 },
                 'required': ['nome_turma'],
                 'example': {
-                    'nome_turma': 'Turma B',
-                    'id_professor': 2,
-                    'horario': '10:00 - 12:00'
+                    'nome_turma': '',
+                    'id_professor': 0,
+                    'horario': ''
                 }
             }
         }

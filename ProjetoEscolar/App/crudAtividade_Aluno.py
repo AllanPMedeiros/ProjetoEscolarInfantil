@@ -21,8 +21,8 @@ app = Blueprint('atividades_alunos', __name__)
             },
             'required': ['id_atividade', 'id_aluno'],
             'example': {
-                'id_atividade': 1,
-                'id_aluno': 1
+                'id_atividade': 0,
+                'id_aluno': 0
             }
         }
     }],

@@ -32,15 +32,24 @@ def validar_senha(senha):
             },
             'required': ['login', 'senha'],
             'example': {
-                'login': 'usuario.novo',
-                'senha': 'Senha123456',
-                'nivel_acesso': 'admin',
-                'id_professor': 1
+                'login': '',
+                'senha': '',
+                'nivel_acesso': '',
+                'id_professor': 0
             }
         }
     }],
     'responses': {
-        201: {'description': 'Usuário criado com sucesso'},
+        201: {
+            'description': 'Usuário criado com sucesso',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'},
+                    'id_usuario': {'type': 'integer'}
+                }
+            }
+        },
         400: {'description': 'Erro na requisição ou dados inválidos'},
         500: {'description': 'Erro no servidor'}
     }
@@ -74,11 +83,13 @@ def create_usuario():
             """
             INSERT INTO usuario (login, senha, nivel_acesso, id_professor)
             VALUES (%s, %s, %s, %s)
+            RETURNING id_usuario
             """,
             (data['login'], hashed_password.decode('utf-8'), data.get('nivel_acesso', 'usuario'), data.get('id_professor'))
         )
+        id_usuario = cursor.fetchone()[0]
         conn.commit()
-        return jsonify({"message": "Usuário criado com sucesso"}), 201
+        return jsonify({"message": "Usuário criado com sucesso", "id_usuario": id_usuario}), 201
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 400
@@ -209,10 +220,10 @@ def read_all_usuarios():
                     'id_professor': {'type': 'integer'}
                 },
                 'example': {
-                    'login': 'usuario.atualizado',
-                    'senha': 'NovaSenha123',
-                    'nivel_acesso': 'usuario',
-                    'id_professor': 2
+                    'login': '',
+                    'senha': '',
+                    'nivel_acesso': '',
+                    'id_professor': 0
                 }
             }
         }
@@ -319,75 +330,75 @@ def delete_usuario(id_usuario):
         conn.close()
 
 # Rota de autenticação
-@app.route('/login', methods=['POST'])
-@swag_from({
-    'tags': ['Autenticação'],
-    'description': 'Autentica um usuário no sistema.',
-    'parameters': [{
-        'name': 'body',
-        'in': 'body',
-        'required': True,
-        'schema': {
-            'type': 'object',
-            'properties': {
-                'login': {'type': 'string'},
-                'senha': {'type': 'string'}
-            },
-            'required': ['login', 'senha'],
-            'example': {
-                'login': 'usuario.exemplo',
-                'senha': 'Senha123456'
-            }
-        }
-    }],
-    'responses': {
-        200: {
-            'description': 'Login bem-sucedido',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'id_usuario': {'type': 'integer'},
-                    'login': {'type': 'string'},
-                    'nivel_acesso': {'type': 'string'},
-                    'message': {'type': 'string'}
-                }
-            }
-        },
-        400: {'description': 'Dados incompletos'},
-        401: {'description': 'Usuário ou senha inválidos'},
-        500: {'description': 'Erro no servidor'}
-    }
-})
-def login():
-    data = request.get_json()
+# @app.route('/login', methods=['POST'])
+# @swag_from({
+#     'tags': ['Autenticação'],
+#     'description': 'Autentica um usuário no sistema.',
+#     'parameters': [{
+#         'name': 'body',
+#         'in': 'body',
+#         'required': True,
+#         'schema': {
+#             'type': 'object',
+#             'properties': {
+#                 'login': {'type': 'string'},
+#                 'senha': {'type': 'string'}
+#             },
+#             'required': ['login', 'senha'],
+#             'example': {
+#                 'login': '',
+#                 'senha': ''
+#             }
+#         }
+#     }],
+#     'responses': {
+#         200: {
+#             'description': 'Login bem-sucedido',
+#             'schema': {
+#                 'type': 'object',
+#                 'properties': {
+#                     'id_usuario': {'type': 'integer'},
+#                     'login': {'type': 'string'},
+#                     'nivel_acesso': {'type': 'string'},
+#                     'message': {'type': 'string'}
+#                 }
+#             }
+#         },
+#         400: {'description': 'Dados incompletos'},
+#         401: {'description': 'Usuário ou senha inválidos'},
+#         500: {'description': 'Erro no servidor'}
+#     }
+# })
+# def login():
+#     data = request.get_json()
     
-    if not data or 'login' not in data or 'senha' not in data:
-        return jsonify({"error": "Informe login e senha"}), 400
+#     if not data or 'login' not in data or 'senha' not in data:
+#         return jsonify({"error": "Informe login e senha"}), 400
     
-    conn = create_connection()
-    if not conn:
-        return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
+#     conn = create_connection()
+#     if not conn:
+#         return jsonify({"error": "Falha na conexão com o banco de dados"}), 500
         
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT id_usuario, login, senha, nivel_acesso FROM usuario WHERE login = %s", (data['login'],))
-        usuario = cursor.fetchone()
+#     cursor = conn.cursor()
+#     try:
+#         cursor.execute("SELECT id_usuario, login, senha, nivel_acesso FROM usuario WHERE login = %s", (data['login'],))
+#         usuario = cursor.fetchone()
         
-        if not usuario:
-            return jsonify({"error": "Usuário ou senha inválidos"}), 401
+#         if not usuario:
+#             return jsonify({"error": "Usuário ou senha inválidos"}), 401
             
-        # Verificar senha com bcrypt
-        if bcrypt.checkpw(data['senha'].encode('utf-8'), usuario[2].encode('utf-8')):
-            return jsonify({
-                "id_usuario": usuario[0],
-                "login": usuario[1],
-                "nivel_acesso": usuario[3],
-                "message": "Login bem-sucedido"
-            }), 200
-        else:
-            return jsonify({"error": "Usuário ou senha inválidos"}), 401
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-    finally:
-        cursor.close()
-        conn.close()
+#         # Verificar senha com bcrypt
+#         if bcrypt.checkpw(data['senha'].encode('utf-8'), usuario[2].encode('utf-8')):
+#             return jsonify({
+#                 "id_usuario": usuario[0],
+#                 "login": usuario[1],
+#                 "nivel_acesso": usuario[3],
+#                 "message": "Login bem-sucedido"
+#             }), 200
+#         else:
+#             return jsonify({"error": "Usuário ou senha inválidos"}), 401
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 400
+#     finally:
+#         cursor.close()
+#         conn.close()
