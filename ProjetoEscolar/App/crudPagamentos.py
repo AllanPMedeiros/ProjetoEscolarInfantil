@@ -157,39 +157,7 @@ def read_pagamento(id_pagamento):
 @app.route('/pagamentos', methods=['GET'])
 @swag_from({
     'tags': ['Pagamentos'],
-    'description': 'Lista todos os pagamentos com opções de filtro.',
-    'parameters': [
-        {
-            'name': 'id_aluno',
-            'in': 'query',
-            'type': 'integer',
-            'required': False,
-            'description': 'Filtrar por ID do aluno'
-        },
-        {
-            'name': 'status',
-            'in': 'query',
-            'type': 'string',
-            'required': False,
-            'description': 'Filtrar por status do pagamento'
-        },
-        {
-            'name': 'data_inicio',
-            'in': 'query',
-            'type': 'string',
-            'format': 'date',
-            'required': False,
-            'description': 'Data inicial para filtro'
-        },
-        {
-            'name': 'data_fim',
-            'in': 'query',
-            'type': 'string',
-            'format': 'date',
-            'required': False,
-            'description': 'Data final para filtro'
-        }
-    ],
+    'description': 'Lista todos os pagamentos.',
     'responses': {
         200: {
             'description': 'Lista de pagamentos',
@@ -219,37 +187,9 @@ def read_all_pagamentos():
         
     cursor = conn.cursor()
     try:
-        # Adicionando parâmetros de filtro opcionais
-        filtros = []
-        valores = []
-        
-        id_aluno = request.args.get('id_aluno')
-        if id_aluno:
-            filtros.append("id_aluno = %s")
-            valores.append(id_aluno)
-            
-        status = request.args.get('status')
-        if status:
-            filtros.append("status = %s")
-            valores.append(status)
-            
-        data_inicio = request.args.get('data_inicio')
-        if data_inicio:
-            filtros.append("data_pagamento >= %s")
-            valores.append(data_inicio)
-            
-        data_fim = request.args.get('data_fim')
-        if data_fim:
-            filtros.append("data_pagamento <= %s")
-            valores.append(data_fim)
-        
-        # Construir a consulta com os filtros
-        query = "SELECT * FROM pagamento"
-        if filtros:
-            query += " WHERE " + " AND ".join(filtros)
-        query += " ORDER BY data_pagamento DESC"
-        
-        cursor.execute(query, tuple(valores))
+        # Consulta simples para listar todos os pagamentos
+        query = "SELECT * FROM pagamento ORDER BY data_pagamento DESC"
+        cursor.execute(query)
         pagamentos = cursor.fetchall()
         
         result = []
