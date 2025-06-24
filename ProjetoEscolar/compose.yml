@@ -1,8 +1,11 @@
 services:
   db:
-    build:
-      context: .
-      dockerfile: dockerfile
+    build: ./db
+    container_name: escola_db
+    environment:
+      POSTGRES_DB: escola
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
