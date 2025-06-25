@@ -31,12 +31,6 @@ CREATE TABLE aluno (
     telefone_responsavel VARCHAR(20),
     email_responsavel VARCHAR(100),
     informacoes_adicionais TEXT,
-    endereco VARCHAR(255),
-    cidade VARCHAR(100),
-    estado VARCHAR(100),
-    cep VARCHAR(20),
-    pais VARCHAR(100),
-    telefone VARCHAR(20),
     FOREIGN KEY (id_turma) REFERENCES turma(id_turma)
 );
 

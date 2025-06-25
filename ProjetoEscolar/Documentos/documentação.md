@@ -1,6 +1,6 @@
 # Justificativa do Modelo de Dados
 
-Este documento apresenta as razões e critérios adotados para a definição de cada tabela, coluna e relacionamentos do banco de dados desenvolvido para o sistema de gestão escolar.
+Este documento apresenta as razões e critérios adotados para a definição de cada tabela, coluna e relacionamentos do banco de dados desenvolvido para o sistema de gestão escolar infantil.
 
 ---
 
@@ -39,10 +39,10 @@ Este documento apresenta as razões e critérios adotados para a definição de 
   * `nome_completo` (VARCHAR): Nome completo para identificação oficial.
   * `data_nascimento` (DATE): Data de nascimento para controle etário.
   * `id_turma` (FK): Associação à turma matriculada.
-  * `nome_responsavel`, `telefone_responsavel`, `email_responsavel`: Contatos de responsáveis em caso de menores.
+  * `nome_responsavel` (VARCHAR): Nome do responsável pelo aluno.
+  * `telefone_responsavel` (VARCHAR): Contato telefônico do responsável.
+  * `email_responsavel` (VARCHAR): Email do responsável para comunicações.
   * `informacoes_adicionais` (TEXT): Anotações extras (alergias, necessidades especiais etc.).
-  * Dados de localização (`endereco`, `cidade`, `estado`, `cep`, `pais`): Para correspondências e relatórios regionais.
-  * `telefone` (VARCHAR): Contato direto do aluno ou responsável.
 
 * **Relacionamentos**:
 
