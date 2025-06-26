@@ -62,6 +62,8 @@ CREATE TABLE atividade (
 CREATE TABLE atividade_aluno (
     id_atividade INT,
     id_aluno INT,
+    desempenho VARCHAR(50),
+    observacoes TEXT,
     PRIMARY KEY (id_atividade, id_aluno),
     FOREIGN KEY (id_atividade) REFERENCES atividade(id_atividade),
     FOREIGN KEY (id_aluno) REFERENCES aluno(id_aluno)
@@ -139,11 +141,23 @@ INSERT INTO atividade (descricao, data_realizacao) VALUES
 ('Introdução aos Números', '2023-03-25');
 
 -- Inserir dados na tabela atividade_aluno
-INSERT INTO atividade_aluno (id_atividade, id_aluno) VALUES 
-(1, 1), (1, 2), (1, 3), (1, 4),
-(2, 1), (2, 2), (2, 5), (2, 6),
-(3, 3), (3, 4), (3, 7), (3, 8),
-(4, 5), (4, 6), (4, 7), (4, 8);
+INSERT INTO atividade_aluno (id_atividade, id_aluno, desempenho, observacoes) VALUES 
+(1, 1, 'Excelente', 'Demonstrou criatividade e atenção aos detalhes'),
+(1, 2, 'Bom', 'Completou a atividade com entusiasmo'),
+(1, 3, 'Regular', 'Teve dificuldade com algumas cores'),
+(1, 4, 'Bom', 'Participou ativamente'),
+(2, 1, 'Excelente', 'Participou da história com perguntas'),
+(2, 2, 'Bom', 'Prestou atenção durante toda a história'),
+(2, 5, 'Excelente', 'Conseguiu recontar partes da história'),
+(2, 6, 'Regular', 'Ficou distraído em alguns momentos'),
+(3, 3, 'Bom', 'Completou todos os exercícios'),
+(3, 4, 'Regular', 'Precisa de mais prática'),
+(3, 7, 'Excelente', 'Demonstrou ótima coordenação'),
+(3, 8, 'Bom', 'Melhorou ao longo da atividade'),
+(4, 5, 'Excelente', 'Reconheceu todos os números apresentados'),
+(4, 6, 'Bom', 'Conseguiu contar até 10 com pouca ajuda'),
+(4, 7, 'Regular', 'Ainda confunde alguns números'),
+(4, 8, 'Bom', 'Demonstrou interesse pelos números');
 
 -- Inserir dados na tabela usuario
 INSERT INTO usuario (login, senha, nivel_acesso, id_professor) VALUES 
