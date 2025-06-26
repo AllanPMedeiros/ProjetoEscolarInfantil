@@ -28,10 +28,10 @@ O sistema permite:
 ProjetoEscolar/
 ├── App/                    # Código fonte da aplicação
 │   ├── Utils/              # Utilitários e configurações
-│   │   ├── __init__.py
+│   │   ├── __init__.py     # Arquivo init para tornar a pasta um pacote Python
 │   │   ├── bd.py           # Conexão com banco de dados
 │   │   └── paramsBD.yml    # Parâmetros de conexão
-│   ├── __init__.py
+│   ├── __init__.py         # Factory da aplicação Flask + Swagger
 │   ├── crudAlunos.py       # CRUD de alunos
 │   ├── crudAtividade_Aluno.py # Relação entre atividades e alunos
 │   ├── crudAtividades.py   # CRUD de atividades
@@ -40,8 +40,8 @@ ProjetoEscolar/
 │   ├── crudProfessores.py  # CRUD de professores
 │   ├── crudTurmas.py       # CRUD de turmas
 │   ├── crudUsuarios.py     # CRUD de usuários
-│   ├── requirements.txt    # Dependências Python
-│   └── test_crudProfessores.py # Testes unitários
+│   ├── README.md           # Documentação da API
+│   └── requirements.txt    # Dependências Python
 ├── db/                     # Configuração do banco de dados
 │   ├── Dockerfile          # Dockerfile para o PostgreSQL
 │   └── escola.sql          # Script de inicialização do banco
@@ -53,6 +53,8 @@ ProjetoEscolar/
 │   ├── postgres-exporter/  # Exportador de métricas do PostgreSQL
 │   └── prometheus/         # Configuração do Prometheus
 ├── scripts/                # Pasta scripts contendo o arquivo DDL comentado
+├── testes/                 # Pasta contendo os testes unitários dos CRUDS
+├──.gitignore               # Arquivos para não serem versionados
 ├── app.py                  # Ponto de entrada da aplicação
 ├── compose.yml             # Configuração do Docker Compose
 └── dockerfile.app          # Dockerfile para a aplicação
