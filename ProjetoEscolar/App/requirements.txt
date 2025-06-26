@@ -3,4 +3,6 @@ pyyaml
 Flask
 flasgger==0.9.7b2
 pytest
+pytest-cov
+pytest-mock
 bcrypt
