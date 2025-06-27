@@ -27,6 +27,7 @@ O sistema permite:
 - [📚 Documentação da API](ProjetoEscolar/App/README.md) - Detalhes sobre endpoints e uso da API
 - [🗄️ Documentação do Banco de Dados](ProjetoEscolar/Documentos/documentação.md) - Informações sobre estrutura do banco e configuração do BD para rodar no docker
 - [🧪 Documentação dos Testes](ProjetoEscolar/testes/README.md) - Guia para execução e criação de testes
+- [🔧 Exemplos para Insomnia](ProjetoEscolar/exemplos_insomnia.md) - Exemplos de requisições HTTP para testar todos os endpoints da API
 
 ## 📁 Estrutura do Projeto
 ```
