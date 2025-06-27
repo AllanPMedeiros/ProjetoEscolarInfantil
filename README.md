@@ -24,7 +24,7 @@ O sistema permite:
   - 🔄 Postgres-exporter para exportação de métricas do banco de dados
 
 ## 📖 Documentação Adicional
-- [📚 Documentação da API](ProjetoEscolar/App/README.md) - Detalhes sobre endpoints e uso da API
+- [📚 Documentação da API](ProjetoEscolar/App/Readme.md) - Detalhes sobre endpoints e uso da API
 - [🗄️ Documentação do Banco de Dados](ProjetoEscolar/Documentos/documentação.md) - Informações sobre estrutura do banco e configuração do BD para rodar no docker
 - [🧪 Documentação dos Testes](ProjetoEscolar/testes/README.md) - Guia para execução e criação de testes
 - [🔧 Exemplos para Insomnia](ProjetoEscolar/exemplos_insomnia.md) - Exemplos de requisições HTTP para testar todos os endpoints da API
@@ -46,7 +46,7 @@ ProjetoEscolar/
 │   ├── crudProfessores.py  # CRUD de professores
 │   ├── crudTurmas.py       # CRUD de turmas
 │   ├── crudUsuarios.py     # CRUD de usuários
-│   ├── README.md           # Documentação da API
+│   ├── Readme.md           # Documentação da API
 │   └── requirements.txt    # Dependências Python
 ├── db/                     # Configuração do banco de dados
 │   ├── Dockerfile          # Dockerfile para o PostgreSQL

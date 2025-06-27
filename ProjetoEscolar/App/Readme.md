@@ -18,7 +18,7 @@ App/
 ├── crudProfessores.py     # CRUD para gerenciamento de professores
 ├── crudTurmas.py          # CRUD para gerenciamento de turmas
 ├── crudUsuarios.py        # CRUD para gerenciamento de usuários
-├── README.md              # Documentação do projeto
+├── Readme.md              # Documentação do projeto
 └── requirements.txt       # Dependências Python
 ```
 
