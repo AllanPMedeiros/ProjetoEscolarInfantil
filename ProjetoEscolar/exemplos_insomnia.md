@@ -141,7 +141,6 @@ http://localhost:5000
   "data_nascimento": "1985-03-20",
   "telefone": "(11) 91234-5678",
   "email": "ana.souza@email.com",
-  "formacao": "Pedagogia",
   "data_contratacao": "2022-01-15"
 }
 ```
@@ -173,7 +172,6 @@ http://localhost:5000
   "data_nascimento": "1985-03-20",
   "telefone": "(11) 91234-5678",
   "email": "ana.souza@email.com",
-  "formacao": "Pedagogia e Psicopedagogia",
   "data_contratacao": "2022-01-15"
 }
 ```
