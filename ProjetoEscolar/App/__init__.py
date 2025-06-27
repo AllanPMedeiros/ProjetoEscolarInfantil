@@ -40,6 +40,11 @@ def create_app(teste_config=None):
     
     Swagger(app, config=swagger_config, template=swagger_template)
     
+    # Rota para página inicial
+    @app.route('/')
+    def home():
+        return "API feita para o gerenciamento de uma escola infantil, a documentação se encontra no seguinte link http://localhost:5000/docs/"
+    
     # Registrar blueprints
     def register_blueprints(app):
         try:
