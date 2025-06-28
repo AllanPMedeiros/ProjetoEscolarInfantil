@@ -416,6 +416,14 @@ http://localhost:5000
 
 ## Usuários
 
+### ⚠️ IMPORTANTE - Antes de testar o Login
+
+**Antes de testar o endpoint de login, você DEVE criar um usuário primeiro!**
+
+O sistema não possui usuários pré-cadastrados. Siga os passos:
+1. Primeiro execute o `POST - Criar Usuário` (abaixo)
+2. Depois teste o `POST - Login` com as mesmas credenciais
+
 ### POST - Login
 
 **Endpoint:** `/login`
@@ -429,6 +437,8 @@ http://localhost:5000
   "senha": "senha123"
 }
 ```
+
+**⚠️ Lembre-se:** Use as mesmas credenciais que você criou no endpoint de criar usuário.
 
 ### POST - Criar Usuário
 

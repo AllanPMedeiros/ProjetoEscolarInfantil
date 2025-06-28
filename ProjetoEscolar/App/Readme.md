@@ -239,6 +239,7 @@ GET    /usuarios         # Listar usuários
 GET    /usuarios/{id}    # Buscar usuário por ID
 PUT    /usuarios/{id}    # Atualizar usuário
 DELETE /usuarios/{id}    # Deletar usuário
+POST   /login            # Fazer login
 ```
 
 **Exemplo de Payload (POST/PUT):**
@@ -250,6 +251,17 @@ DELETE /usuarios/{id}    # Deletar usuário
   "id_professor": 1
 }
 ```
+
+**Exemplo de Payload para Login (POST /login):**
+```json
+{
+  "login": "ana.santos",
+  "senha": "MinhaSenh@123"
+}
+```
+
+**⚠️ IMPORTANTE - Antes de testar o Login:**
+Antes de testar o endpoint `/login`, é necessário criar um usuário através do endpoint `POST /usuarios`. O sistema não possui usuários pré-cadastrados.
 
 **Observações sobre Usuários:**
 - Senha deve ter pelo menos 8 caracteres com letras e números
