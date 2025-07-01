@@ -431,7 +431,7 @@ O sistema não possui usuários pré-cadastrados. Siga os passos:
 **Body (JSON):**
 ```json
 {
-  "nome_usuario": "admin",
+  "login": "admin",
   "senha": "senha123"
 }
 ```
@@ -447,10 +447,10 @@ O sistema não possui usuários pré-cadastrados. Siga os passos:
 **Body (JSON):**
 ```json
 {
-  "nome_usuario": "admin",
+  "login": "admin",
   "senha": "senha123",
-  "email": "admin@escola.com",
-  "tipo": "administrador"
+  "nivel_acesso": "administrador",
+  "id_professor": null
 }
 ```
 
@@ -477,10 +477,10 @@ O sistema não possui usuários pré-cadastrados. Siga os passos:
 **Body (JSON):**
 ```json
 {
-  "nome_usuario": "admin",
+  "login": "admin",
   "senha": "novaSenha456",
-  "email": "admin@escola.com",
-  "tipo": "administrador"
+  "nivel_acesso": "administrador",
+  "id_professor": null
 }
 ```
 
