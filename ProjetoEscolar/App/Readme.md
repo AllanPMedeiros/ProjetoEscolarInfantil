@@ -161,6 +161,7 @@ DELETE /atividades/{id}  # Deletar atividade
 POST   /atividades_alunos                    # Associar aluno à atividade
 GET    /atividades_alunos                    # Listar associações
 GET    /atividades_alunos/{id_ativ}/{id_aluno} # Buscar associação específica
+PUT    /atividades_alunos/{id_ativ}/{id_aluno} # Atualizar associação
 DELETE /atividades_alunos/{id_ativ}/{id_aluno} # Remover associação
 ```
 
@@ -168,7 +169,17 @@ DELETE /atividades_alunos/{id_ativ}/{id_aluno} # Remover associação
 ```json
 {
   "id_atividade": 1,
-  "id_aluno": 5
+  "id_aluno": 5,
+  "desempenho": "Bom",
+  "observacoes": "Participou ativamente da atividade"
+}
+```
+
+**Exemplo de Payload (PUT):**
+```json
+{
+  "desempenho": "Excelente",
+  "observacoes": "Demonstrou grande progresso"
 }
 ```
 

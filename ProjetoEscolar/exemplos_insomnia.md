@@ -240,11 +240,11 @@ http://localhost:5000
 
 **⚠️ Importante:** Apenas passe o ID na URL. Não é necessário enviar body.
 
-## Atividade-Aluno
+## Atividades-Alunos
 
-### POST - Registrar Atividade para Aluno
+### POST - Associar Atividade a Aluno
 
-**Endpoint:** `/atividade-aluno`
+**Endpoint:** `/atividades_alunos`
 
 **Método:** `POST`
 
@@ -253,48 +253,46 @@ http://localhost:5000
 {
   "id_atividade": 1,
   "id_aluno": 1,
-  "observacoes": "Aluno participou com entusiasmo",
-  "nota": "Excelente"
+  "desempenho": "Bom",
+  "observacoes": "Participou ativamente da atividade"
 }
 ```
 
-### GET - Listar Todas as Atividades-Aluno
+### GET - Listar Todas as Atividades-Alunos
 
-**Endpoint:** `/atividade-aluno`
-
-**Método:** `GET`
-
-### GET - Buscar Atividade-Aluno por ID
-
-**Endpoint:** `/atividade-aluno/1`
+**Endpoint:** `/atividades_alunos`
 
 **Método:** `GET`
 
-**⚠️ Importante:** Apenas passe o ID na URL. Não é necessário enviar body.
+### GET - Buscar Atividade-Aluno Específica
+
+**Endpoint:** `/atividades_alunos/1/1`
+
+**Método:** `GET`
+
+**⚠️ Importante:** Passe o ID da atividade e o ID do aluno na URL (formato: /atividades_alunos/{id_atividade}/{id_aluno}). Não é necessário enviar body.
 
 ### PUT - Atualizar Atividade-Aluno
 
-**Endpoint:** `/atividade-aluno/1`
+**Endpoint:** `/atividades_alunos/1/1`
 
 **Método:** `PUT`
 
 **Body (JSON):**
 ```json
 {
-  "id_atividade": 1,
-  "id_aluno": 1,
-  "observacoes": "Aluno participou com muito entusiasmo e criatividade",
-  "nota": "Excelente"
+  "desempenho": "Excelente",
+  "observacoes": "Demonstrou grande progresso na atividade"
 }
 ```
 
 ### DELETE - Excluir Atividade-Aluno
 
-**Endpoint:** `/atividade-aluno/1`
+**Endpoint:** `/atividades_alunos/1/1`
 
 **Método:** `DELETE`
 
-**⚠️ Importante:** Apenas passe o ID na URL. Não é necessário enviar body.
+**⚠️ Importante:** Passe o ID da atividade e o ID do aluno na URL (formato: /atividades_alunos/{id_atividade}/{id_aluno}). Não é necessário enviar body.
 
 ## Presenças
 
